@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 import os
 import re
 import sys
@@ -72,7 +71,6 @@ setup(
     description='Chia vdf verification (wraps C++)',
     license='Apache License',
     python_requires='>=3.5',
-    install_requires=['pytest', 'cppimport', 'bitstring', 'flake8'],
     long_description=open('README.md').read(),
     ext_modules=[CMakeExtension('chiavdf', '.')],
     cmdclass=dict(build_ext=CMakeBuild),
