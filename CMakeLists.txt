@@ -14,7 +14,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
 )
 
-find_package(GMP 4.3.1 REQUIRED)
+find_package(GMP REQUIRED)
 find_package(GMPXX REQUIRED)
 
 include_directories(
