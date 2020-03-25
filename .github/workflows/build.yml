@@ -59,7 +59,7 @@ jobs:
         CIBW_BEFORE_BUILD_WINDOWS: python -m pip install --upgrade pip
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: py.test -v {project}/tests
-        CIBW_ENVIRONMENT: "PATH=/project/cmake-3.17.0-Linux-x86_64/bin:$PATH"
+        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-x86_64/bin:$PATH"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
