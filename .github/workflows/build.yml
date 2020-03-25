@@ -51,6 +51,8 @@ jobs:
       env:
         # build just python 3.7
         CIBW_BUILD: cp37-*
+        # don't build i686 targets, can't seem to find cmake for these
+        CIBW_SKIP: *-manylinux_i686
         # we need boost
         # we need pybind11 to be globally available for cibuildwheel
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
