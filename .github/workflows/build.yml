@@ -38,7 +38,7 @@ jobs:
         CIBW_BUILD: cp37-*
         # we need boost
         # we need pybind11 to be globally available for cibuildwheel
-        CIBW_BEFORE_BUILD_LINUX: yum -y install boost-devel && python -m pip install --upgrade pip && pip install pybind11
+        CIBW_BEFORE_BUILD_LINUX: curl -L https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-x86_64.sh > cmake.sh && yes | sh cmake.sh | cat && rm -f /usr/bin/cmake && ln -s cmake-3.17.0-Linux-x86_64/bin/cmake /usr/bin/cmake && yum -y install boost-devel && python -m pip install --upgrade pip && pip install pybind11
         CIBW_BEFORE_BUILD_MACOS: brew install boost && python -m pip install --upgrade pip && pip install pybind11
         CIBW_BEFORE_BUILD_WINDOWS: python -m pip install --upgrade pip && pip install pybind11 cmake
         CIBW_TEST_REQUIRES: pytest
