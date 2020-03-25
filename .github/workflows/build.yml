@@ -28,7 +28,7 @@ jobs:
     - name: Setup cmake
       # for whatever reason, Windows can't find the cmake installed by python
       # we will hack around it for now
-      if: (startsWith(matrix.os, 'windows')
+      if: startsWith(matrix.os, 'windows')
       uses: jwlawson/actions-setup-cmake@v1.0
       with:
         cmake-version: '3.16.3'
