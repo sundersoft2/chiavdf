@@ -75,11 +75,11 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_NON_INTERACTIVE: 1
         TWINE_PASSWORD: ${{ secrets.test_pypi_password }}
-      run: twine upload --non-interactive --skip-existing --verbose 'dist/*whl' 'dist/*tar.gz'
+      run: twine upload --non-interactive --skip-existing --verbose 'dist/*'
     - name: Publish distribution to PyPI
       if: startsWith(github.event.ref, 'refs/tags')
       env:
         TWINE_USERNAME: __token__
         TWINE_NON_INTERACTIVE: 1
         TWINE_PASSWORD: ${{ secrets.pypi_password }}
-      run: twine upload --non-interactive --skip-existing --verbose 'dist/*whl' 'dist/*tar.gz'
+      run: twine upload --non-interactive --skip-existing --verbose 'dist/*'
