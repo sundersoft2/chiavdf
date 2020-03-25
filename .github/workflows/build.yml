@@ -39,6 +39,12 @@ jobs:
       run: |
         choco install vcpython27 -f -y
 
+    - name: Build source distribution
+      if: startsWith(matrix.os, 'mac')
+      run: |
+        pip install pep517
+        python -m pep517.build --source --out-dir dist .
+
     - name: Build wheel
       run: |
         python -m cibuildwheel --output-dir dist
@@ -53,6 +59,7 @@ jobs:
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: py.test -v {project}/tests
         CIBW_ENVIRONMENT: "PATH=/project/cmake-3.17.0-Linux-x86_64/bin:$PATH"
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
@@ -66,11 +73,11 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_NON_INTERACTIVE: 1
         TWINE_PASSWORD: ${{ secrets.test_pypi_password }}
-      run: twine upload --non-interactive --skip-existing --verbose 'dist/*whl'
+      run: twine upload --non-interactive --skip-existing --verbose 'dist/*whl' 'dist/*tar.gz'
     - name: Publish distribution to PyPI
       if: startsWith(github.event.ref, 'refs/tags')
       env:
         TWINE_USERNAME: __token__
         TWINE_NON_INTERACTIVE: 1
         TWINE_PASSWORD: ${{ secrets.pypi_password }}
-      run: twine upload --non-interactive --skip-existing --verbose 'dist/*whl'
+      run: twine upload --non-interactive --skip-existing --verbose 'dist/*whl' 'dist/*tar.gz'
