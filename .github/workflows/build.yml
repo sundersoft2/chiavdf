@@ -42,7 +42,7 @@ jobs:
       with:
         msystem: MINGW64
         update: true
-      run: |
+    - run: |
         msys2do pacman --noconfirm --needed -S base-devel mingw-w64-x86_64-toolchain
         msys2do pwd
         msys2do ls
