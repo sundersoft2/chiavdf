@@ -190,6 +190,22 @@ void session(tcp::socket& sock) {
     }
 }
 
+int launch_client(char *host, char *port, int local_process_number)
+{
+  boost::asio::io_service io_service;
+
+  tcp::resolver resolver(io_service);
+  tcp::resolver::query query(tcp::v6(), host, port, boost::asio::ip::resolver_query_base::v4_mapped);
+  tcp::resolver::iterator iterator = resolver.resolve(query);
+
+  tcp::socket s(io_service);
+  boost::asio::connect(s, iterator);
+  process_number = local_process_number;
+  session(s);
+  return 0;
+}
+
+
 int main(int argc, char* argv[])
 {
   try {
@@ -198,19 +214,8 @@ int main(int argc, char* argv[])
       std::cerr << "Usage: ./vdf_client <host> <port> <process_number>\n";
       return 1;
     }
-
-    boost::asio::io_service io_service;
-
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(tcp::v6(), argv[1], argv[2], boost::asio::ip::resolver_query_base::v4_mapped);
-    tcp::resolver::iterator iterator = resolver.resolve(query);
-
-    tcp::socket s(io_service);
-    boost::asio::connect(s, iterator);
-    process_number = atoi(argv[3]);
-    session(s);
+    return launch_client(argv[1], argv[2], atoi(argv[3]));
   } catch (std::exception& e) {
     std::cerr << "Exception: " << e.what() << "\n";
   }
-  return 0;
 }

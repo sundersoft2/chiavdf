@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include "../verifier.h"
 #include "../prover_slow.h"
+#include "../vdf_client.h"
 
 namespace py = pybind11;
 
@@ -69,5 +70,9 @@ PYBIND11_MODULE(chiavdf, m) {
         auto result = ProveSlow(challenge_hash_bytes, discriminant_size_bits, num_iterations);
         py::bytes ret = py::bytes(reinterpret_cast<char*>(result.data()), result.size());
         return ret;
+    });
+
+    m.def("launch_client", [] (const char *host, const char *port, int local_process_number) {
+        return launch_client(host, port, local_process_number);
     });
 }

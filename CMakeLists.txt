@@ -24,10 +24,11 @@ include_directories(
   ${GMPXX_INCLUDE_DIR}
 )
 
-set (CMAKE_CXX_FLAGS "-std=c++1z")
+set (CMAKE_CXX_FLAGS -std=c++1z)
+set (CMAKE_CXX_FLAGS "-DENABLE_ALL_INSTRUCTIONS=1")
 
 add_subdirectory(lib/pybind11)
-pybind11_add_module(chiavdf ${CMAKE_CURRENT_SOURCE_DIR}/python_bindings/fastvdf.cpp)
+pybind11_add_module(chiavdf ${CMAKE_CURRENT_SOURCE_DIR}/python_bindings/fastvdf.cpp ${CMAKE_CURRENT_SOURCE_DIR}/vdf_client.cpp)
 
 add_executable(verifier_test
     verifier_test.cpp
