@@ -42,9 +42,10 @@ jobs:
       with:
         msystem: MINGW64
         update: true
-      run: msys2do pacman --noconfirm --needed -S base-devel mingw-w64-x86_64-toolchain
-      run: msys2do pwd
-      run: msys2do ls
+      run: |
+        msys2do pacman --noconfirm --needed -S base-devel mingw-w64-x86_64-toolchain
+        msys2do pwd
+        msys2do ls
 #    - run: msys2do pacman --noconfirm -U mingw-w64-*-any.pkg.tar.x
 
 
