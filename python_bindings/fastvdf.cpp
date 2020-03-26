@@ -71,8 +71,4 @@ PYBIND11_MODULE(chiavdf, m) {
         py::bytes ret = py::bytes(reinterpret_cast<char*>(result.data()), result.size());
         return ret;
     });
-
-    m.def("launch_client", [] (const char *host, const char *port, int local_process_number) {
-        return launch_client(host, port, local_process_number);
-    });
-}
+  }

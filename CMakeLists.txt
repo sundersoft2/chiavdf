@@ -8,6 +8,7 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF()
 
 project(chiavdf)
+project(chiatimelord)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_CURRENT_LIST_DIR}/cmake
@@ -28,11 +29,13 @@ set (CMAKE_CXX_FLAGS -std=c++1z)
 set (CMAKE_CXX_FLAGS "-DENABLE_ALL_INSTRUCTIONS=1")
 
 add_subdirectory(lib/pybind11)
-pybind11_add_module(chiavdf ${CMAKE_CURRENT_SOURCE_DIR}/python_bindings/fastvdf.cpp ${CMAKE_CURRENT_SOURCE_DIR}/vdf_client.cpp)
+pybind11_add_module(chiavdf ${CMAKE_CURRENT_SOURCE_DIR}/python_bindings/fastvdf.cpp)
+pybind11_add_module(chiatimelord ${CMAKE_CURRENT_SOURCE_DIR}/python_bindings/launch.cpp ${CMAKE_CURRENT_SOURCE_DIR}/vdf_client.cpp)
 
 add_executable(verifier_test
     verifier_test.cpp
 )
 
 target_link_libraries(chiavdf PRIVATE ${GMP_LIBRARIES} ${GMPXX_LIBRARIES} -pthread)
+target_link_libraries(chiatimelord PRIVATE ${GMP_LIBRARIES} ${GMPXX_LIBRARIES} -pthread)
 target_link_libraries(verifier_test ${GMP_LIBRARIES} ${GMPXX_LIBRARIES} -pthread)

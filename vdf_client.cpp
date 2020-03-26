@@ -1,5 +1,8 @@
 #include <boost/asio.hpp>
 #include "vdf.h"
+
+#include "verifier.h"
+
 using boost::asio::ip::tcp;
 
 const int max_length = 2048;
@@ -190,7 +193,7 @@ void session(tcp::socket& sock) {
     }
 }
 
-int launch_client(char *host, char *port, int local_process_number)
+int launch_client(const char *host, const char *port, int local_process_number)
 {
   boost::asio::io_service io_service;
 
