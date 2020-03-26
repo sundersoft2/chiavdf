@@ -29,10 +29,10 @@ jobs:
       # for whatever reason, Windows can't find the cmake installed by python
       # we will hack around it for now
       if: startsWith(matrix.os, 'windows')
-      uses: jwlawson/actions-setup-cmake@v1.0
+      uses: numworks/setup-msys2@v1
       with:
-        cmake-version: '3.16.3'
-        github-api-token: ${{ secrets.GITHUB_TOKEN }}
+        msystem: MINGW64
+        update: true
 
     - name: Install Visual C++ for Python 2.7
       if: startsWith(matrix.os, 'windows')
