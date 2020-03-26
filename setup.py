@@ -92,8 +92,9 @@ def invoke_make(**kwargs):
     subprocess.check_output('make -f Makefile.binary', shell=True)
 
 
-add_install_hook(copy_vdf_client)
-add_build_hook(invoke_make)
+if os.getenv("BUILD_VDF_CLIENT", "Y") == "Y":
+    add_install_hook(copy_vdf_client)
+    add_build_hook(invoke_make)
 
 
 class CMakeBuild(build_ext):
