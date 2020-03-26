@@ -42,6 +42,10 @@ jobs:
       with:
         msystem: MINGW64
         update: true
+
+    - name: Compile yasm
+      if: startsWith(matrix.os, 'windows')
+      uses: numworks/setup-msys2@v1
     - run: |
         msys2do yasm/./configure
         msys2do yasm/make
