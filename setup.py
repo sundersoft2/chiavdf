@@ -89,7 +89,7 @@ def copy_vdf_client(build_dir, install_dir):
 
 
 def invoke_make(**kwargs):
-    subprocess.check_output('make -f Makefile.binary', shell=True)
+    subprocess.check_output('make -f Makefile.vdf-client', shell=True)
 
 
 if os.getenv("BUILD_VDF_CLIENT", "Y") == "Y":
