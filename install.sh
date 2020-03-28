@@ -3,7 +3,7 @@
 # Stop in case of error
 set -e
 
-python -m pip install cibuildwheel==1.3.0
+#python -m pip install cibuildwheel==1.3.0
 
 
 # build just python 3.7
@@ -28,7 +28,12 @@ export CIBW_TEST_COMMAND="py.test -v {project}/tests"
 #pip install scikit-build
 #pip install -e .
 export PATH=$PATH:"C:\msys64\mingw64\bin\cmake.exe"
-pip -vv wheel .
+echo "PWD is $PWD"
+if [ ! -d "$PWD/tmp" ]; then
+    mkdir $PWD/tmp
+fi
+export TEMP=$PWD/tmp
+pip -vv wheel . --build
 
 #THE_PATH=`python -c 'import pkg_resources; print( pkg_resources.get_distribution("chiavdf").location)' 2> /dev/null`/vdf_client
 
