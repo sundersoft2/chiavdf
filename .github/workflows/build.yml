@@ -2,13 +2,16 @@ name: Build Windows
 
 on: [push, pull_request]
 
-
+jobs:
   build-windows:
 
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v1
+      with:
+        fetch-depth: 0
+        # we need fetch-depth 0 so setuptools_scm can resolve tags
     - uses: numworks/setup-msys2@v1
     - name: update pacman
       run: msys2do pacman -Syu --noconfirm
