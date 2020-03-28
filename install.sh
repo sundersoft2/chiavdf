@@ -25,7 +25,7 @@ if [ ! -f "activate" ]; then
 fi
 . ./activate
 python -m pip install --upgrade pip
-pip install scikit-build
+#pip install scikit-build
 #pip install -e .
 pip -v wheel .
 
