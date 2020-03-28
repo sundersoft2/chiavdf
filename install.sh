@@ -33,7 +33,8 @@ if [ ! -d "$PWD/tmp" ]; then
     mkdir $PWD/tmp
 fi
 export TEMP=$PWD/tmp
-pip -vv wheel . --build
+export TMPDIR=$TEMP
+pip -vv wheel .
 
 #THE_PATH=`python -c 'import pkg_resources; print( pkg_resources.get_distribution("chiavdf").location)' 2> /dev/null`/vdf_client
 
