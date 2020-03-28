@@ -19,5 +19,6 @@ export CIBW_TEST_REQUIRES="pytest"
 export CIBW_TEST_COMMAND="py.test -v {project}/tests"
 #CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH BUILD_VDF_CLIENT=N"
 
-make --makefile Makefile.vdf-client
+python -m setup.py
+#make --makefile Makefile.vdf-client
 #python -m cibuildwheel --output-dir dist
