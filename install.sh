@@ -19,7 +19,7 @@ export CIBW_TEST_REQUIRES="pytest"
 export CIBW_TEST_COMMAND="py.test -v {project}/tests"
 #CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH BUILD_VDF_CLIENT=N"
 
-python -m venv venv
+python3 -m venv venv
 if [ ! -f "activate" ]; then
     ln -s venv/bin/activate
 fi
