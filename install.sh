@@ -4,7 +4,7 @@
 set -e
 
 python -m pip install cibuildwheel==1.3.0
-#python -m pip install pep517
+
 
 # build just python 3.7
 export CIBW_BUILD="cp37-win_amd64"
@@ -27,6 +27,7 @@ export CIBW_TEST_COMMAND="py.test -v {project}/tests"
 #python -m pip install --upgrade pip
 #pip install scikit-build
 #pip install -e .
+export PATH=$PATH:"C:\msys64\mingw64\bin\cmake.exe"
 pip -vv wheel .
 
 #THE_PATH=`python -c 'import pkg_resources; print( pkg_resources.get_distribution("chiavdf").location)' 2> /dev/null`/vdf_client
