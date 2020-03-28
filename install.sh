@@ -19,6 +19,28 @@ export CIBW_TEST_REQUIRES="pytest"
 export CIBW_TEST_COMMAND="py.test -v {project}/tests"
 #CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH BUILD_VDF_CLIENT=N"
 
-python -m setup.py
+python -m venv venv
+if [ ! -f "activate" ]; then
+    ln -s venv/bin/activate
+fi
+. ./activate
+python -m pip install --upgrade pip
+pip install -e .
+
+THE_PATH=`python -c 'import pkg_resources; print( pkg_resources.get_distribution("chiavdf").location)' 2> /dev/null`/vdf_client
+
+if [ -e $THE_PATH ]
+then
+  echo "vdf_client already exists, no action taken"
+else
+  if [ -e venv/bin/python ]
+  then
+    echo "installing chiavdf from source"
+    echo venv/bin/python -m pip install --force --no-binary chiavdf chiavdf==0.12.1
+    venv/bin/python -m pip install --force --no-binary chiavdf chiavdf==0.12.1
+  else
+    echo "no venv created yet, please run install.sh"
+  fi
+fi
 #make --makefile Makefile.vdf-client
 #python -m cibuildwheel --output-dir dist
