@@ -27,7 +27,7 @@ fi
 python -m pip install --upgrade pip
 pip install scikit-build
 #pip install -e .
-pip wheel .
+pip -v wheel .
 
 #THE_PATH=`python -c 'import pkg_resources; print( pkg_resources.get_distribution("chiavdf").location)' 2> /dev/null`/vdf_client
 
