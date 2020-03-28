@@ -42,7 +42,7 @@ jobs:
       with:
         msystem: MINGW64
         update: true
-    - run: msys2do install.sh
+    - run: msys2do ./install.sh
 #    - run: msys2do pacman -S --noconfirm --noprogressbar base-devel mingw-w64-x86_64-toolchain
 #    - run: msys2do yasm/configure
 
