@@ -42,11 +42,11 @@ jobs:
       with:
         msystem: MINGW64
         update: true
-
-    - name: Compile yasm
-      if: startsWith(matrix.os, 'windows')
     - run: msys2do pacman -S --noconfirm --noprogressbar base-devel mingw-w64-x86_64-toolchain
     - run: msys2do yasm/configure
+
+#    - name: Compile yasm
+#      if: startsWith(matrix.os, 'windows')
 #    - run: msys2do pacman -S --noconfirm yasm/configure --build=x86_64-w64-mingw32 --host=x86_64-w64-mingw32 --enable-fat --enable-static --disable-shared ABI=64 CFLAGS="-m64 -march=k8 -Wno-attributes" --prefix=/local/Win64 --exec-prefix=/local/Win64 --enable-gmpcompat
 
 
