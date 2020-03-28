@@ -33,7 +33,10 @@ if [ ! -d "$PWD/tmp" ]; then
     mkdir $PWD/tmp
 fi
 export TEMP=$PWD/tmp
+#not clear which one pip respects
 export TMPDIR=$TEMP
+cmake -G "MSYS Makefiles" .
+make
 pip -vv wheel .
 
 #THE_PATH=`python -c 'import pkg_resources; print( pkg_resources.get_distribution("chiavdf").location)' 2> /dev/null`/vdf_client
