@@ -4,4 +4,4 @@
 set -e
 
 echo "Hello world"
-ls
+#ls
