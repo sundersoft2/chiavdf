@@ -25,22 +25,23 @@ if [ ! -f "activate" ]; then
 fi
 . ./activate
 python -m pip install --upgrade pip
-pip install -e .
+#pip install -e .
+pip wheel .
 
-THE_PATH=`python -c 'import pkg_resources; print( pkg_resources.get_distribution("chiavdf").location)' 2> /dev/null`/vdf_client
+#THE_PATH=`python -c 'import pkg_resources; print( pkg_resources.get_distribution("chiavdf").location)' 2> /dev/null`/vdf_client
 
-if [ -e $THE_PATH ]
-then
-  echo "vdf_client already exists, no action taken"
-else
-  if [ -e venv/bin/python ]
-  then
-    echo "installing chiavdf from source"
-    echo venv/bin/python -m pip install --force --no-binary chiavdf chiavdf==0.12.1
-    venv/bin/python -m pip install --force --no-binary chiavdf chiavdf==0.12.1
-  else
-    echo "no venv created yet, please run install.sh"
-  fi
-fi
+#if [ -e $THE_PATH ]
+#then
+#  echo "vdf_client already exists, no action taken"
+#else
+#  if [ -e venv/bin/python ]
+#  then
+#    echo "installing chiavdf from source"
+#    echo venv/bin/python -m pip install --force --no-binary chiavdf chiavdf==0.12.2
+#    venv/bin/python -m pip install --force --no-binary chiavdf chiavdf==0.12.2
+#  else
+#    echo "no venv created yet, please run install.sh"
+#  fi
+#fi
 #make --makefile Makefile.vdf-client
 #python -m cibuildwheel --output-dir dist
