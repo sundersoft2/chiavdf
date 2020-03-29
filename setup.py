@@ -69,6 +69,7 @@ class CMakeExtension(Extension):
 def copy_vdf_client(build_dir, install_dir):
     install_dir = pathlib.Path(install_dir)
     install_dir.mkdir(parents=True, exist_ok=True)
+    print(f"copy vdf_client to {install_dir}")
     shutil.copy("vdf_client", install_dir)
 
 
@@ -86,6 +87,7 @@ def copy_lib(build_dir, install_dir):
         if _.startswith("chiavdf."):
             p = pathlib.Path(_)
             if p.is_file():
+                print(f"copy {p} to {install_dir}")
                 shutil.copy(p, install_dir)
 
 
