@@ -83,6 +83,8 @@ def invoke_cmake(build_dir, install_dir):
 
 
 def copy_lib(build_dir, install_dir):
+    install_dir = pathlib.Path(install_dir)
+    install_dir.mkdir(parents=True, exist_ok=True)
     for _ in os.listdir("."):
         if _.startswith("chiavdf."):
             p = pathlib.Path(_)
