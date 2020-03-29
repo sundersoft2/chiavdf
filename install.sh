@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 # Stop in case of error
 set -e
@@ -29,13 +29,14 @@ export CIBW_TEST_COMMAND="py.test -v {project}/tests"
 #pip install -e .
 export PATH=$PATH:"C:\msys64\mingw64\bin\cmake.exe"
 echo "PWD is $PWD"
-if [ ! -d "$PWD/tmp" ]; then
-    mkdir $PWD/tmp
-fi
-export TEMP=$PWD/tmp
+#if [ ! -d "$PWD/tmp" ]; then
+#    mkdir $PWD/tmp
+#fi
+#export TEMP=$PWD/tmp
 #not clear which one pip respects
-export TMPDIR=$TEMP
-cmake -G "MSYS Makefiles" .
+#export TMPDIR=$TEMP
+#cmake -G "MSYS Makefiles" .
+cmake -G "MSYS Makefiles" --build .
 make
 pip -vv wheel .
 
