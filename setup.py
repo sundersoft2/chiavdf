@@ -16,7 +16,7 @@ def add_build_hook(hook):
     BUILD_HOOKS.append(hook)
 
 
-class build_hook(Command):
+class HookCommand(Command):
     def __init__(self, dist):
         self.dist = dist
         Command.__init__(self, dist)
@@ -32,33 +32,19 @@ class build_hook(Command):
                                    )
 
     def run(self):
-        for _ in BUILD_HOOKS:
-            _(install_dir=self.install_dir, build_dir=self.build_dir, dist=self.dist)
+        for _ in self.hooks:
+            _(install_dir=self.install_dir, build_dir=self.build_dir)
+
+
+class build_hook(HookCommand):
+    hooks = BUILD_HOOKS
+
+
+class install_hook(HookCommand):
+    hooks = INSTALL_HOOKS
 
 
 build.sub_commands.append(("build_hook", lambda x: True))
-
-
-class install_hook(Command):
-    def __init__(self, dist):
-        self.dist = dist
-        Command.__init__(self, dist)
-
-    def initialize_options(self, *args):
-        self.install_dir = None
-        self.build_dir = None
-
-    def finalize_options(self):
-        self.set_undefined_options('build', ('build_scripts', 'build_dir'))
-        self.set_undefined_options('install',
-                                   ('install_platlib', 'install_dir'),
-                                   )
-
-    def run(self):
-        for _ in INSTALL_HOOKS:
-            _(install_dir=self.install_dir, build_dir=self.build_dir, dist=self.dist)
-
-
 install.sub_commands.append(("install_hook", lambda x: True))
 
 
@@ -66,16 +52,12 @@ install.sub_commands.append(("install_hook", lambda x: True))
 
 
 import os
-import re
 import shutil
-import sys
 import pathlib
-import platform
 import subprocess
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
 
 
 class CMakeExtension(Extension):
@@ -84,23 +66,22 @@ class CMakeExtension(Extension):
         self.sourcedir = os.path.abspath(sourcedir)
 
 
-
-def copy_vdf_client(build_dir, install_dir, dist):
+def copy_vdf_client(build_dir, install_dir):
     install_dir = pathlib.Path(install_dir)
     install_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy("vdf_client", install_dir)
 
 
-def invoke_make(build_dir, install_dir, dist):
+def invoke_make(build_dir, install_dir):
     subprocess.check_call('make -f Makefile.vdf-client', shell=True)
 
 
-def invoke_cmake(build_dir, install_dir, dist):
+def invoke_cmake(build_dir, install_dir):
     subprocess.check_call('cmake .', shell=True)
     subprocess.check_call('cmake --build .', shell=True)
 
 
-def copy_lib(build_dir, install_dir, dist):
+def copy_lib(build_dir, install_dir):
     for _ in os.listdir("."):
         if _.startswith("chiavdf."):
             p = pathlib.Path(_)
@@ -128,7 +109,7 @@ setup(
     license='Apache License',
     python_requires='>=3.5',
     long_description=open('README.md').read(),
-    ext_modules=[CMakeExtension('chiavdf', '.')],
+    ext_modules=[Extension('chiavdf', [])],
     cmdclass=dict(build_ext=NoopBuild, install_hook=install_hook, build_hook=build_hook),
     zip_safe=False,
 )
