@@ -33,7 +33,7 @@ class build_hook(Command):
 
     def run(self):
         for _ in BUILD_HOOKS:
-            _(install_dir=self.install_dir, build_dir=self.build_dir)
+            _(install_dir=self.install_dir, build_dir=self.build_dir, dist=self.dist)
 
 
 build.sub_commands.append(("build_hook", lambda x: True))
@@ -56,7 +56,7 @@ class install_hook(Command):
 
     def run(self):
         for _ in INSTALL_HOOKS:
-            _(install_dir=self.install_dir, build_dir=self.build_dir)
+            _(install_dir=self.install_dir, build_dir=self.build_dir, dist=self.dist)
 
 
 install.sub_commands.append(("install_hook", lambda x: True))
@@ -69,6 +69,7 @@ import os
 import re
 import shutil
 import sys
+import pathlib
 import platform
 import subprocess
 
@@ -84,67 +85,40 @@ class CMakeExtension(Extension):
 
 
 
-def copy_vdf_client(build_dir, install_dir):
+def copy_vdf_client(build_dir, install_dir, dist):
+    install_dir = pathlib.Path(install_dir)
+    install_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy("vdf_client", install_dir)
 
 
-def invoke_make(**kwargs):
-    subprocess.check_output('make -f Makefile.vdf-client', shell=True)
+def invoke_make(build_dir, install_dir, dist):
+    subprocess.check_call('make -f Makefile.vdf-client', shell=True)
+
+
+def invoke_cmake(build_dir, install_dir, dist):
+    subprocess.check_call('cmake .', shell=True)
+    subprocess.check_call('cmake --build .', shell=True)
+
+
+def copy_lib(build_dir, install_dir, dist):
+    for _ in os.listdir("."):
+        if _.startswith("chiavdf."):
+            p = pathlib.Path(_)
+            if p.is_file():
+                shutil.copy(p, install_dir)
 
 
 if os.getenv("BUILD_VDF_CLIENT", "Y") == "Y":
     add_install_hook(copy_vdf_client)
     add_build_hook(invoke_make)
 
+add_build_hook(invoke_cmake)
+add_install_hook(copy_lib)
 
-class CMakeBuild(build_ext):
+
+class NoopBuild(build_ext):
     def run(self):
-        try:
-            out = subprocess.check_output(['cmake', '--version'])
-        except OSError:
-            raise RuntimeError("CMake must be installed to build" +
-                               " the following extensions: " +
-                               ", ".join(e.name for e in self.extensions))
-
-        if platform.system() == "Windows":
-            cmake_version = LooseVersion(
-                    re.search(r'version\s*([\d.]+)', out.decode()).group(1))
-            if cmake_version < '3.1.0':
-                raise RuntimeError("CMake >= 3.1.0 is required on Windows")
-
-        for ext in self.extensions:
-            self.build_extension(ext)
-
-    def build_extension(self, ext):
-        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + str(extdir),
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
-
-        cfg = 'Debug' if self.debug else 'Release'
-        build_args = ['--config', cfg]
-
-        if platform.system() == "Windows":
-            cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'
-                           .format(cfg.upper(), extdir)]
-            if sys.maxsize > 2**32:
-                cmake_args += ['-A', 'x64']
-            build_args += ['--', '/m']
-        else:
-            cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            build_args += ['--', '-j', '6']
-
-        env = os.environ.copy()
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(
-                env.get('CXXFLAGS', ''),
-                self.distribution.get_version())
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
-        subprocess.check_call(['cmake', ext.sourcedir] +
-                              cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] +
-                              build_args, cwd=self.build_temp)
-#        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, env=env)
-#        subprocess.check_call(['cmake', '--build', '.'] + build_args)
+        pass
 
 setup(
     name='chiavdf',
@@ -155,6 +129,6 @@ setup(
     python_requires='>=3.5',
     long_description=open('README.md').read(),
     ext_modules=[CMakeExtension('chiavdf', '.')],
-    cmdclass=dict(build_ext=CMakeBuild, install_hook=install_hook, build_hook=build_hook),
+    cmdclass=dict(build_ext=NoopBuild, install_hook=install_hook, build_hook=build_hook),
     zip_safe=False,
 )
