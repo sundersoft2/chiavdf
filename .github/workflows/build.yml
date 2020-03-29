@@ -16,6 +16,19 @@ jobs:
       with:
         fetch-depth: 0
         # we need fetch-depth 0 so setuptools_scm can resolve tags
+
+    - name: Setup msys2
+      if: startsWith(matrix.os, 'windows')
+      uses: numworks/setup-msys2@v1
+
+    - name: Update pacman
+      if: startsWith(matrix.os, 'windows')
+      run: msys2do pacman -Syu --noconfirm
+
+    - name: Install chiavdf dependencies
+      if: startsWith(matrix.os, 'windows')
+      run: msys2do pacman -S --noconfirm mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-gmp mingw-w64-x86_64-dlib git
+
     - uses: actions/setup-python@v1
       name: Install Python
       with:
@@ -33,18 +46,6 @@ jobs:
       with:
         cmake-version: '3.16.3'
         github-api-token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Setup msys2
-      if: startsWith(matrix.os, 'windows')
-      uses: numworks/setup-msys2@v1
-
-    - name: Update pacman
-      if: startsWith(matrix.os, 'windows')
-      run: msys2do pacman -Syu --noconfirm
-
-    - name: Install chiavdf dependencies
-      if: startsWith(matrix.os, 'windows')
-      run: msys2do pacman -S --noconfirm mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-python mingw-w64-x86_64-gmp mingw-w64-x86_64-python-pip mingw-w64-x86_64-dlib mingw-w64-x86_64-python-pep517 git
 
     - name: Install Visual C++ for Python 2.7
       if: startsWith(matrix.os, 'windows')
