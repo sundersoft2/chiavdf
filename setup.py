@@ -26,7 +26,7 @@ ext_modules = [
     Extension(
         'chiapos',
         [
-            "python-bindings/fastvdf.cpp",
+            "python_bindings/fastvdf.cpp",
         ],
         include_dirs=[
             # Path to pybind11 headers
