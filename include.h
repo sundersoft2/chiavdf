@@ -20,7 +20,9 @@
 #include <array>
 #include <sstream>
 #include <fstream>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include <cassert>
 #include <iomanip>
 #include <set>
