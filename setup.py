@@ -32,7 +32,7 @@ ext_modules = [
             # Path to pybind11 headers
             get_pybind_include(),
             get_pybind_include(user=True),
-            ../mpir_gc_x86
+            '../mpir_gc_x86'
         ],
         library_dirs=['../mpir_gc_x86'],
         libraries=['mpir'])
