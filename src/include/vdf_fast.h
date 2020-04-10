@@ -3,10 +3,10 @@ typedef mpz<17, 22> mpz_17; //3 cache lines
 typedef mpz<25, 30> mpz_25; //4 cache lines
 typedef mpz<33, 38> mpz_33; //5 cache lines
 
-static_assert(sizeof(mpz_9 )==2*64);
-static_assert(sizeof(mpz_17)==3*64);
-static_assert(sizeof(mpz_25)==4*64);
-static_assert(sizeof(mpz_33)==5*64);
+static_assert(sizeof(mpz_9 )==2*64, "bad mpz_9 size");
+static_assert(sizeof(mpz_17)==3*64, "bad mpz_17 size");
+static_assert(sizeof(mpz_25)==4*64, "bad mpz_25 size");
+static_assert(sizeof(mpz_33)==5*64, "bad mpz_33 size");
 
 //these all have at least 64 extra bits before they reallocate
 //x is the discriminant number of bits divided by 4
