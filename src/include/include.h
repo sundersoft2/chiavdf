@@ -10,13 +10,7 @@
 #endif
 
 #include <iostream>
-#include <string>
 #include <vector>
-#include <cstdio>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <string>
 #include <array>
 #include <sstream>
 #include <fstream>
@@ -30,18 +24,9 @@ typedef __int128 int128;
 #define USED
 #endif
 #include <cassert>
-#include <iomanip>
 #include <set>
 #include <random>
-#include <limits>
-#include <cstdlib>
 #include <map>
-#include <functional>
-#include <algorithm>
-#include <cstdint>
-#include <deque>
-#include <cfenv>
-#include <ctime>
 #include <thread>
 #include "generic.h"
 #include <gmpxx.h>
