@@ -55,7 +55,7 @@ if sys.platform == "win32":
 PYBIND11_PATH = pybind11.get_include()
 
 # Split splits the string into paths
-OTHER_HEADERS = Split("src")
+OTHER_HEADERS = Split("src src/include")
 
 EXTRA_CPPPATH = [PYBIND11_PATH] + OTHER_HEADERS
 
@@ -77,9 +77,7 @@ use_py_limited = "abi3" in full_tag
 ext_filename = enscons.cpyext.extension_filename("chiavdf", abi3=use_py_limited)
 
 
-SOURCE_DIRECTORIES = ["src/python_bindings", "src"]
-
-SOURCE_DIST_FILES = []  # env.Glob("%s/*" % _) for _ in SOURCE_DIRECTORIES]
+SOURCE_DIST_FILES = [Glob("src/*", "src/python_bindings/*", "src/cmds/*")]
 
 # workaround of an enscons bug
 # in some cases, such as "chiabip158-0.13.dev3" if the base name
