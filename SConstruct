@@ -119,6 +119,7 @@ if sys.platform == "darwin":
 if sys.platform == "win32":
     CPPFLAGS.append("/EHsc")
 
+LIBPATH = ["/usr/local/lib"]
 
 extension = env.SharedLibrary(
     # we need to pass the PATH environment variable through from the shell so we
@@ -128,6 +129,7 @@ extension = env.SharedLibrary(
     source=EXT_SOURCE,
     LIBPREFIX="",
     LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
+    LIBPATH = ["/usr/local/lib"],
     SHLIBSUFFIX=SHLIBSUFFIX,
     CPPFLAGS=CPPFLAGS,
     parse_flags=PARSE_FLAGS,
@@ -137,10 +139,13 @@ extension = env.SharedLibrary(
     # if it doesn't understand how to do so (like "-std=c++11"), it will ignore them
 )
 
-VDF_CLIENT_SOURCE = ["src/cmds/vdf_client.cpp"]
-
-vdf_client = env.Program(VDF_CLIENT_SOURCE,  LIBS=["gmp", "gmpxx", "boost_system", "pthread"],    CPPFLAGS=CPPFLAGS,)
+VDF_CLIENT_SOURCE = ["src/cmds/vdf_client.cpp", "asm_compiled.s", "avx2_asm_compiled.s"]
+vdf_client = env.Program(VDF_CLIENT_SOURCE,  LIBS=["gmp", "gmpxx", "boost_system", "pthread"], LIBPATH=LIBPATH,   CPPFLAGS=CPPFLAGS,)
 env.Alias("vdf_client", vdf_client)
+
+VDF_BENCH_SOURCE = ["src/cmds/vdf_bench.cpp", "asm_compiled.s", "avx2_asm_compiled.s"]
+vdf_bench = env.Program(VDF_BENCH_SOURCE,  LIBS=["gmp", "gmpxx", "boost_system", "pthread"], LIBPATH=LIBPATH,   CPPFLAGS=CPPFLAGS,)
+env.Alias("vdf_bench", vdf_bench)
 
 
 # Only *.py is included automatically by setup2toml.
