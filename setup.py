@@ -35,7 +35,7 @@ ext_modules = [
             '../mpir_gc_x86'
         ],
         library_dirs=['../mpir_gc_x86'],
-        libraries=['mpir'])
+        libraries=['mpir'],
         language='c++'
     ),
 ]
