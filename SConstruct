@@ -1,7 +1,6 @@
 # Based on scons file from cryptacular at https://bitbucket.org/dholth/cryptacular/
 # Build with `scons` or `pip wheel .` (or any other pep517-compliant builder)
 
-import distutils.sysconfig
 import os
 import sys
 
@@ -159,7 +158,9 @@ env["BUILDERS"]["AsmCompiled"] = bld
 asm_compiled = env.AsmCompiled("asm_compiled.s", compile_asm)
 asm_compiled_avx2 = env.AsmCompiled("asm_compiled_avx2.s", compile_asm)
 
-VDF_CLIENT_SOURCE = ["src/cmds/vdf_client.cpp", asm_compiled, asm_compiled_avx2]
+asm_lib = env.Library("asm_compiled_lib", [asm_compiled, asm_compiled_avx2])
+
+VDF_CLIENT_SOURCE = ["src/cmds/vdf_client.cpp", asm_lib]
 vdf_client = env.Program(
     VDF_CLIENT_SOURCE,
     LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
@@ -168,7 +169,7 @@ vdf_client = env.Program(
 )
 env.Alias("vdf_client", vdf_client)
 
-VDF_BENCH_SOURCE = ["src/cmds/vdf_bench.cpp", asm_compiled, asm_compiled_avx2]
+VDF_BENCH_SOURCE = ["src/cmds/vdf_bench.cpp", asm_lib]
 vdf_bench = env.Program(
     VDF_BENCH_SOURCE,
     LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
@@ -182,7 +183,18 @@ env.Alias("vdf_bench", vdf_bench)
 # Add extra 'purelib' files or package_data here.
 py_source = []
 
-platlib = env.Whl("platlib", py_source + [extension], root="")
+binaries = []
+
+vdf_client_2 = env.Install(".", vdf_client)
+vdf_bench_2 = env.Install(".", vdf_bench)
+
+if os.getenv("BUILD_VDF_CLIENT", "Y") == "Y":
+    binaries.append(vdf_client_2)
+if os.getenv("BUILD_VDF_BENCH", "N") == "Y":
+    binaries.append(vdf_bench_2)
+
+
+platlib = env.Whl("platlib", py_source + [extension] + binaries, root="")
 wheel = env.WhlFile(source=platlib)
 
 # "scons develop" for use with "pip install -e"
