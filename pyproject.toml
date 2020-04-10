@@ -1,6 +1,25 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.5.0"]
-build-backend = "setuptools.build_meta"
+requires = ["pytoml>=0.1", "enscons>=0.23", "pybind11", "setuptools_scm[toml]>=3.5.0"]
+build-backend = "enscons.api"
 
-[tool.setuptools_scm]
-local_scheme = "no-local-version"
+[tool.enscons]
+name = "chiavdf"
+classifiers = ["Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: C",
+    "Topic :: Security :: Cryptography"]
+author='Florin Chirica'
+author_email='florin@chia.net'
+url = "https://github.com/Chia-Network/chiavdf"
+license='Apache License'
+tests_require = ["pytest", "coverage"]
+packages = ["tests"]
+description='Chia vdf verification (wraps C++)'
+description_file="README.md"
+
+# pip install '.[test]' will install pytest & pytest-cov
+[tool.enscons.extras_require]
+test = ["pytest", "pytest-cov"]
