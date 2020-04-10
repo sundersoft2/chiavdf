@@ -77,7 +77,7 @@ use_py_limited = "abi3" in full_tag
 ext_filename = enscons.cpyext.extension_filename("chiavdf", abi3=use_py_limited)
 
 
-SOURCE_DIST_FILES = [Glob("src/*", "src/python_bindings/*", "src/cmds/*")]
+SOURCE_DIST_FILES = [Glob("src/*", "src/python_bindings/*")]
 
 # workaround of an enscons bug
 # in some cases, such as "chiabip158-0.13.dev3" if the base name
@@ -158,7 +158,7 @@ asm_compiled_avx2 = env.AsmCompiled("asm_compiled_avx2.s", compile_asm)
 
 asm_lib = env.Library("asm_compiled_lib", [asm_compiled, asm_compiled_avx2])
 
-VDF_CLIENT_SOURCE = ["src/cmds/vdf_client.cpp", asm_lib]
+VDF_CLIENT_SOURCE = ["src/vdf_client.cpp", asm_lib]
 vdf_client = env.Program(
     VDF_CLIENT_SOURCE,
     LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
@@ -167,7 +167,7 @@ vdf_client = env.Program(
 )
 env.Alias("vdf_client", vdf_client)
 
-VDF_BENCH_SOURCE = ["src/cmds/vdf_bench.cpp", asm_lib]
+VDF_BENCH_SOURCE = ["src/vdf_bench.cpp", asm_lib]
 vdf_bench = env.Program(
     VDF_BENCH_SOURCE,
     LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
