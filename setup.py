@@ -24,7 +24,7 @@ class get_pybind_include(object):
 
 ext_modules = [
     Extension(
-        'chiapos',
+        'chiavdf',
         [
             "python_bindings/fastvdf.cpp",
         ],
