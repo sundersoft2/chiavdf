@@ -60,6 +60,7 @@ OTHER_HEADERS = Split("src")
 
 EXTRA_CPPPATH = [PYBIND11_PATH] + OTHER_HEADERS
 
+
 env = Environment(
     tools=["default", "packaging", enscons.generate, enscons.cpyext.generate],
     PACKAGE_METADATA=get_metadata(),
@@ -79,7 +80,7 @@ ext_filename = enscons.cpyext.extension_filename("chiavdf", abi3=use_py_limited)
 
 SOURCE_DIRECTORIES = ["src/python_bindings", "src"]
 
-SOURCE_DIST_FILES = [] #env.Glob("%s/*" % _) for _ in SOURCE_DIRECTORIES]
+SOURCE_DIST_FILES = []  # env.Glob("%s/*" % _) for _ in SOURCE_DIRECTORIES]
 
 # workaround of an enscons bug
 # in some cases, such as "chiabip158-0.13.dev3" if the base name
@@ -104,7 +105,9 @@ sdist = env.SDist(source=sdist_source)
 env.Alias("sdist", sdist)
 
 
-EXT_SOURCE = ["src/python_bindings/fastvdf.cpp"] #_ for _ in Flatten(SOURCE_DIST_FILES) if str(_).endswith(".cpp")]
+EXT_SOURCE = [
+    "src/python_bindings/fastvdf.cpp"
+]  # _ for _ in Flatten(SOURCE_DIST_FILES) if str(_).endswith(".cpp")]
 
 # for abi3 we need -DPy_LIMITED_API=0x03030000 to modify the Python.h headers
 
@@ -129,7 +132,7 @@ extension = env.SharedLibrary(
     source=EXT_SOURCE,
     LIBPREFIX="",
     LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
-    LIBPATH = ["/usr/local/lib"],
+    LIBPATH=["/usr/local/lib"],
     SHLIBSUFFIX=SHLIBSUFFIX,
     CPPFLAGS=CPPFLAGS,
     parse_flags=PARSE_FLAGS,
@@ -139,12 +142,39 @@ extension = env.SharedLibrary(
     # if it doesn't understand how to do so (like "-std=c++11"), it will ignore them
 )
 
-VDF_CLIENT_SOURCE = ["src/cmds/vdf_client.cpp", "asm_compiled.s", "avx2_asm_compiled.s"]
-vdf_client = env.Program(VDF_CLIENT_SOURCE,  LIBS=["gmp", "gmpxx", "boost_system", "pthread"], LIBPATH=LIBPATH,   CPPFLAGS=CPPFLAGS,)
+compile_asm = env.Program(
+    "src/compile_asm.cpp", LIBS=["pthread", "gmp"], CPPFLAGS=CPPFLAGS
+)
+
+
+def generate_actions(source, target, env, for_signature):
+    modifer = "avx2" if "avx2" in str(target[0]) else ""
+    return "%s %s > %s" % (source[0], modifer, target[0])
+
+
+bld = env.Builder(generator=generate_actions)
+env["BUILDERS"]["AsmCompiled"] = bld
+
+
+asm_compiled = env.AsmCompiled("asm_compiled.s", compile_asm)
+asm_compiled_avx2 = env.AsmCompiled("asm_compiled_avx2.s", compile_asm)
+
+VDF_CLIENT_SOURCE = ["src/cmds/vdf_client.cpp", asm_compiled, asm_compiled_avx2]
+vdf_client = env.Program(
+    VDF_CLIENT_SOURCE,
+    LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
+    LIBPATH=LIBPATH,
+    CPPFLAGS=CPPFLAGS,
+)
 env.Alias("vdf_client", vdf_client)
 
-VDF_BENCH_SOURCE = ["src/cmds/vdf_bench.cpp", "asm_compiled.s", "avx2_asm_compiled.s"]
-vdf_bench = env.Program(VDF_BENCH_SOURCE,  LIBS=["gmp", "gmpxx", "boost_system", "pthread"], LIBPATH=LIBPATH,   CPPFLAGS=CPPFLAGS,)
+VDF_BENCH_SOURCE = ["src/cmds/vdf_bench.cpp", asm_compiled, asm_compiled_avx2]
+vdf_bench = env.Program(
+    VDF_BENCH_SOURCE,
+    LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
+    LIBPATH=LIBPATH,
+    CPPFLAGS=CPPFLAGS,
+)
 env.Alias("vdf_bench", vdf_bench)
 
 
@@ -162,7 +192,3 @@ env.Alias("develop", develop)
 
 # by default, build the wheel and the sdist
 env.Default(wheel, sdist)
-
-
-compile_asm = Program("src/compile_asm.cpp", LIBS=["pthread", "gmp"], CPPFLAGS=CPPFLAGS)
-env.Alias("compile_asm", compile_asm)

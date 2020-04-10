@@ -239,13 +239,12 @@ void compile_asm_gcd_unsigned() {
 #endif
 
 #ifdef COMPILE_ASM
-void compile_asm(std::string filename) {
+void compile_asm() {
     compile_asm_gcd_base();
     compile_asm_gcd_128();
     compile_asm_gcd_unsigned();
 
-    ofstream out( filename );
-    out << m.format_res_text();
+    cout << m.format_res_text();
 }
 #endif
 
