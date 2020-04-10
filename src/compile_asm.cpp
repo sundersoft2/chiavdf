@@ -41,8 +41,6 @@ bool enable_all_instructions=false;
 
 int main(int argc, char** argv) {
     set_rounding_mode();
-
-    string filename="asm_compiled.s";
     
     if((argc==2)&&(strcmp(argv[1],"avx2")==0))
     {
@@ -51,8 +49,7 @@ int main(int argc, char** argv) {
        gcd_128_max_iter=2;
        asmprefix="avx2_";
        enable_all_instructions=true;
-       filename="avx2_asm_compiled.s";
     }
 
-    asm_code::compile_asm(filename);
+    asm_code::compile_asm();
 }
