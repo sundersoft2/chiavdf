@@ -49,6 +49,9 @@ PYBIND11_PATH = pybind11.get_include()
 # Split splits the string into paths
 OTHER_HEADERS = Split("src src/include")
 
+LIBPATH = ["/usr/local/lib"]
+
+
 # we need to set stuff up differently for Windows because it's funky
 if sys.platform == "win32":
     import distutils.msvccompiler
@@ -56,7 +59,8 @@ if sys.platform == "win32":
     MSVC_VERSION = str(distutils.msvccompiler.get_build_version())  # it is a float
     SHLIBSUFFIX = ".pyd"
     TARGET_ARCH = "x86_64" if sys.maxsize.bit_length() == 63 else "x86"
-    OTHER_HEADERS.append(Split("src/uint128_t"))
+    OTHER_HEADERS.append(Split("src/uint128_t mpir_gc_x64"))
+    LIBPATH.append("mpir_gc_x64")
 
 
 EXTRA_CPPPATH = [PYBIND11_PATH] + OTHER_HEADERS
@@ -114,6 +118,9 @@ PARSE_FLAGS = "-DPy_LIMITED_API=0x03030000" if use_py_limited else ""
 
 CPPFLAGS = ["-std=c++1z", "-O3"]
 
+GMP_LIBS = ["gmp", "gmpxx"]
+
+
 if sys.platform == "darwin":
     CPPFLAGS.append("-mmacosx-version-min=10.14")
     CPPFLAGS.append("-D CHIAOSX=1")
@@ -122,7 +129,6 @@ if sys.platform == "win32":
     CPPFLAGS = ["/EHsc", "/std:c++17"]
     GMP_LIBS = ["mpir"]
 
-LIBPATH = ["/usr/local/lib"]
 
 extension = env.SharedLibrary(
     # we need to pass the PATH environment variable through from the shell so we
@@ -131,8 +137,8 @@ extension = env.SharedLibrary(
     target=ext_filename,
     source=EXT_SOURCE,
     LIBPREFIX="",
-    LIBS=["gmp", "gmpxx"],
-    LIBPATH=["/usr/local/lib"],
+    LIBS=GMP_LIBS,
+    LIBPATH=LIBPATH,
     SHLIBSUFFIX=SHLIBSUFFIX,
     CPPFLAGS=CPPFLAGS,
     parse_flags=PARSE_FLAGS,
@@ -164,7 +170,7 @@ asm_lib = env.Library("asm_compiled_lib", [asm_compiled, asm_compiled_avx2])
 VDF_CLIENT_SOURCE = ["src/vdf_client.cpp", asm_lib]
 vdf_client = env.Program(
     VDF_CLIENT_SOURCE,
-    LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
+    LIBS=GMP_LIBS + ["boost_system", "pthread"],
     LIBPATH=LIBPATH,
     CPPFLAGS=CPPFLAGS,
 )
@@ -173,7 +179,7 @@ env.Alias("vdf_client", vdf_client)
 VDF_BENCH_SOURCE = ["src/vdf_bench.cpp", asm_lib]
 vdf_bench = env.Program(
     VDF_BENCH_SOURCE,
-    LIBS=["gmp", "gmpxx", "boost_system", "pthread"],
+    LIBS=GMP_LIBS + ["boost_system", "pthread"],
     LIBPATH=LIBPATH,
     CPPFLAGS=CPPFLAGS,
 )
