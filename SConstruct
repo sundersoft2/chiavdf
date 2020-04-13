@@ -1,6 +1,7 @@
 # Based on scons file from cryptacular at https://bitbucket.org/dholth/cryptacular/
 # Build with `scons` or `pip wheel .` (or any other pep517-compliant builder)
 
+import distutils.sysconfig
 import os
 import sys
 
@@ -49,7 +50,14 @@ PYBIND11_PATH = pybind11.get_include()
 # Split splits the string into paths
 OTHER_HEADERS = Split("src src/include")
 
-LIBPATH = ["/usr/local/lib"]
+LIBPATH = ["/usr/local/lib", distutils.sysconfig.get_python_lib(plat_specific=1)]
+print("LIBPATH=%s" % LIBPATH)
+print(os.listdir(LIBPATH[-1]))
+for dirpath, dirnames, filenames in os.walk("."):
+    print(f"{dirpath} => {filenames}")
+for dirpath, dirnames, filenames in os.walk("c:\\cibw\\python\\python.3.7.6\\"):
+    print(f"{dirpath} => {filenames}")
+print(distutils.sysconfig.get_config_vars())
 
 
 # we need to set stuff up differently for Windows because it's funky
