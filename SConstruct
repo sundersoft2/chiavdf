@@ -43,6 +43,12 @@ MSVC_VERSION = None
 SHLIBSUFFIX = None
 TARGET_ARCH = None  # only set for win32
 
+# get path to "pybind11.h"
+PYBIND11_PATH = pybind11.get_include()
+
+# Split splits the string into paths
+OTHER_HEADERS = Split("src src/include")
+
 # we need to set stuff up differently for Windows because it's funky
 if sys.platform == "win32":
     import distutils.msvccompiler
@@ -50,12 +56,8 @@ if sys.platform == "win32":
     MSVC_VERSION = str(distutils.msvccompiler.get_build_version())  # it is a float
     SHLIBSUFFIX = ".pyd"
     TARGET_ARCH = "x86_64" if sys.maxsize.bit_length() == 63 else "x86"
+    OTHER_HEADERS.append(Split("src/uint128_t"))
 
-# get path to "pybind11.h"
-PYBIND11_PATH = pybind11.get_include()
-
-# Split splits the string into paths
-OTHER_HEADERS = Split("src src/include")
 
 EXTRA_CPPPATH = [PYBIND11_PATH] + OTHER_HEADERS
 

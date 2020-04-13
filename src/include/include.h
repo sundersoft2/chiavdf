@@ -14,6 +14,7 @@
 #include <array>
 #include <sstream>
 #include <fstream>
+
 #ifndef _WIN32
 #include <unistd.h>
 typedef unsigned __int128 uint128;
@@ -23,6 +24,7 @@ typedef __int128 int128;
 #include "uint128_t/uint128_t.h"
 #define USED
 #endif
+
 #include <cassert>
 #include <set>
 #include <random>
