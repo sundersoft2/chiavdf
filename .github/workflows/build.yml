@@ -43,7 +43,7 @@ jobs:
         # build python 3.7 and 3.8
         CIBW_BUILD: cp37-* cp38-*
         # don't build i686 targets, some 128-bit int data types missing
-        CIBW_SKIP: '*-manylinux_i686'
+        CIBW_SKIP: '*-manylinux_i686 *-win32'
         # we need boost
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
         CIBW_BEFORE_BUILD_LINUX: yum -y install boost-devel gmp-devel && python -m pip install --upgrade pip
