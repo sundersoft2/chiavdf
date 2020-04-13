@@ -119,7 +119,8 @@ if sys.platform == "darwin":
     CPPFLAGS.append("-D CHIAOSX=1")
 
 if sys.platform == "win32":
-    CPPFLAGS.append("/EHsc")
+    CPPFLAGS = ["/EHsc", "/std:c++17"]
+    GMP_LIBS = ["mpir"]
 
 LIBPATH = ["/usr/local/lib"]
 
@@ -142,7 +143,7 @@ extension = env.SharedLibrary(
 )
 
 compile_asm = env.Program(
-    "src/compile_asm.cpp", LIBS=["pthread", "gmp"], CPPFLAGS=CPPFLAGS
+    "src/compile_asm.cpp", LIBS=["pthread"] + GMP_LIBS, CPPFLAGS=CPPFLAGS
 )
 
 
