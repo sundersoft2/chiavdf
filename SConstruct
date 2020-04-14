@@ -56,7 +56,6 @@ LIBPATH = [
     distutils.sysconfig.get_config_vars("BINDIR")
 ]
 print("LIBPATH=%s" % LIBPATH)
-print(os.listdir(LIBPATH[-1]))
 for dirpath, dirnames, filenames in os.walk("."):
     print(f"{dirpath} => {filenames}")
 for dirpath, dirnames, filenames in os.walk("c:\\cibw\\python\\python.3.7.6\\"):
