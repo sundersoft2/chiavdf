@@ -50,7 +50,11 @@ PYBIND11_PATH = pybind11.get_include()
 # Split splits the string into paths
 OTHER_HEADERS = Split("src src/include")
 
-LIBPATH = ["/usr/local/lib", distutils.sysconfig.get_python_lib(plat_specific=1)]
+LIBPATH = [
+    "/usr/local/lib",
+    distutils.sysconfig.get_python_lib(plat_specific=1),
+    distutils.sysconfig.get_config_vars("BINDIR")
+]
 print("LIBPATH=%s" % LIBPATH)
 print(os.listdir(LIBPATH[-1]))
 for dirpath, dirnames, filenames in os.walk("."):
