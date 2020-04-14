@@ -146,7 +146,6 @@ extension = env.SharedLibrary(
     source=EXT_SOURCE,
     LIBPREFIX="",
     LIBS=GMP_LIBS,
-    LIBPATH=LIBPATH,
     SHLIBSUFFIX=SHLIBSUFFIX,
     CPPFLAGS=CPPFLAGS,
     parse_flags=PARSE_FLAGS,
@@ -155,6 +154,8 @@ extension = env.SharedLibrary(
     # and it will reverse-engineer them into the scons env
     # if it doesn't understand how to do so (like "-std=c++11"), it will ignore them
 )
+env["LIBPATH"].extend(LIBPATH)
+
 
 compile_asm = env.Program(
     "src/compile_asm.cpp", LIBS=["pthread"] + GMP_LIBS, CPPFLAGS=CPPFLAGS
