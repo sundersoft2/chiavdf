@@ -41,7 +41,7 @@ jobs:
         python -m cibuildwheel --output-dir dist
       env:
         # build python 3.7 and 3.8
-        CIBW_BUILD: cp37-* cp38-*
+        CIBW_BUILD: cp37-*
         # don't build i686 targets, some 128-bit int data types missing
         CIBW_SKIP: '*-manylinux_i686 *-win32'
         # we need boost
