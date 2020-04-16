@@ -38,7 +38,7 @@ jobs:
 
     - name: Build wheel
       run: |
-        python -m cibuildwheel --output-dir dist
+        python -m cibuildwheel --output-dir dist || echo "oops"
       env:
         # build python 3.7 and 3.8
         CIBW_BUILD: cp37-*
