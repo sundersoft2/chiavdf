@@ -56,10 +56,10 @@ LIBPATH = [
     distutils.sysconfig.get_config_vars("BINDIR")
 ]
 print("LIBPATH=%s" % LIBPATH)
-for dirpath, dirnames, filenames in os.walk("."):
+for dirpath, dirnames, filenames in os.walk("C:\\Program File (x86)\\Windows Kits\\10"):
     print(f"{dirpath} => {filenames}")
-for dirpath, dirnames, filenames in os.walk("c:\\cibw\\python\\python.3.7.6\\"):
-    print(f"{dirpath} => {filenames}")
+#for dirpath, dirnames, filenames in os.walk("c:\\cibw\\python\\python.3.7.6\\"):
+#    print(f"{dirpath} => {filenames}")
 print(distutils.sysconfig.get_config_vars())
 
 
