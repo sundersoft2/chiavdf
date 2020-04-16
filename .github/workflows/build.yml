@@ -26,7 +26,7 @@ jobs:
         python -m pip install cibuildwheel==1.3.0
 
     - name: Install Visual C++ for Python 2.7
-      if: startsWith(matrix.os, 'windows')
+      if: 0 # startsWith(matrix.os, 'windows')
       run: |
         choco install vcpython27 -f -y
 
