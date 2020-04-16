@@ -86,6 +86,10 @@ env = Environment(
 )
 env["CPPPATH"].extend(EXTRA_CPPPATH)
 
+WIN_PATH = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.18362.0\\x86\\"
+if sys.platform == "win32":
+    env["ENV"]["PATH"] = "%s;%s" % (env["ENV"]["PATH"], WIN_PATH)
+
 
 # seems to be related to abi3 (see c-api comment above)
 
