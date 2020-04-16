@@ -141,10 +141,12 @@ if sys.platform == "win32":
     GMP_LIBS = ["mpir"]
 
 
+print("old path=%s", env["ENV"]["PATH"])
+
 extension = env.SharedLibrary(
     # we need to pass the PATH environment variable through from the shell so we
     # can find the g++ compiler on the docker image provided by cibuildwheel
-    ENV={"PATH": os.environ["PATH"]},
+    ENV={"PATH": "%s:%s" % (env["ENV"]["PATH"], os.environ["PATH"])},
     target=ext_filename,
     source=EXT_SOURCE,
     LIBPREFIX="",
