@@ -53,14 +53,8 @@ OTHER_HEADERS = Split("src src/include")
 LIBPATH = [
     "/usr/local/lib",
     distutils.sysconfig.get_python_lib(plat_specific=1),
-    distutils.sysconfig.get_config_vars("BINDIR")
+    distutils.sysconfig.get_config_vars("BINDIR"),
 ]
-print("LIBPATH=%s" % LIBPATH)
-for dirpath, dirnames, filenames in os.walk("C:\\Program File (x86)\\Windows Kits\\10"):
-    print(f"{dirpath} => {filenames}")
-#for dirpath, dirnames, filenames in os.walk("c:\\cibw\\python\\python.3.7.6\\"):
-#    print(f"{dirpath} => {filenames}")
-print(distutils.sysconfig.get_config_vars())
 
 
 # we need to set stuff up differently for Windows because it's funky
@@ -86,12 +80,14 @@ env = Environment(
     ENV={"PATH": os.environ["PATH"]},
 )
 env["CPPPATH"].extend(EXTRA_CPPPATH)
-env['ENV']['TMP'] = os.environ['TMP']
 
 
-WIN_PATH = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.18362.0\\x86\\"
 if sys.platform == "win32":
+    # this path is needed so rc.exe can be found
+    # not sure why it's not being found otherwise
+    WIN_PATH = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.18362.0\\x86\\"
     env["ENV"]["PATH"] = "%s;%s" % (env["ENV"]["PATH"], WIN_PATH)
+    env["ENV"]["TMP"] = os.environ["TMP"]
 
 
 # seems to be related to abi3 (see c-api comment above)
@@ -137,7 +133,7 @@ PARSE_FLAGS = "-DPy_LIMITED_API=0x03030000" if use_py_limited else ""
 CPPFLAGS = ["-std=c++1z", "-O3"]
 
 GMP_LIBS = ["gmp", "gmpxx"]
-
+COPIED_LIBS = []
 
 if sys.platform == "darwin":
     CPPFLAGS.append("-mmacosx-version-min=10.14")
@@ -146,9 +142,9 @@ if sys.platform == "darwin":
 if sys.platform == "win32":
     CPPFLAGS = ["/EHsc", "/std:c++17"]
     GMP_LIBS = ["mpir"]
+    MPIR_DLL = env.Install(".", "mpir_gc_x64/mpir.dll")
+    COPIED_LIBS.append(MPIR_DLL)
 
-
-print("old path=%s" % env["ENV"]["PATH"])
 
 extension = env.SharedLibrary(
     # we need to pass the PATH environment variable through from the shell so we
@@ -222,7 +218,7 @@ if os.getenv("BUILD_VDF_BENCH", "N") == "Y":
     binaries.append(vdf_bench_2)
 
 
-platlib = env.Whl("platlib", py_source + [extension] + binaries, root="")
+platlib = env.Whl("platlib", py_source + [extension] + binaries + COPIED_LIBS, root="")
 wheel = env.WhlFile(source=platlib)
 
 # "scons develop" for use with "pip install -e"
