@@ -86,6 +86,8 @@ env = Environment(
     ENV={"PATH": os.environ["PATH"]},
 )
 env["CPPPATH"].extend(EXTRA_CPPPATH)
+env['ENV']['TMP'] = os.environ['TMP']
+
 
 WIN_PATH = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.18362.0\\x86\\"
 if sys.platform == "win32":
