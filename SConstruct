@@ -97,7 +97,7 @@ use_py_limited = "abi3" in full_tag
 ext_filename = enscons.cpyext.extension_filename("chiavdf", abi3=use_py_limited)
 
 
-SOURCE_DIST_FILES = [Glob("src/*", "src/python_bindings/*")]
+SOURCE_DIST_FILES = [Glob("src/*", "src/python_bindings/*", "src/refcode/*.c")]
 
 # workaround of an enscons bug
 # in some cases, such as "chiabip158-0.13.dev3" if the base name
@@ -121,16 +121,18 @@ sdist_source = SOURCE_DIST_FILES + [
 sdist = env.SDist(source=sdist_source)
 env.Alias("sdist", sdist)
 
-
+LZCNT = ["src/refcode/lzcnt.c"]
 EXT_SOURCE = [
-    "src/python_bindings/fastvdf.cpp"
-]  # _ for _ in Flatten(SOURCE_DIST_FILES) if str(_).endswith(".cpp")]
+    "src/python_bindings/fastvdf.cpp",
+    LZCNT,
+]
 
 # for abi3 we need -DPy_LIMITED_API=0x03030000 to modify the Python.h headers
 
 PARSE_FLAGS = "-DPy_LIMITED_API=0x03030000" if use_py_limited else ""
 
-CPPFLAGS = ["-std=c++1z", "-O3"]
+CPPFLAGS = ["-O3"]
+CXXFLAGS = ["-std=c++1z"]
 
 GMP_LIBS = ["gmp", "gmpxx"]
 COPIED_LIBS = []
@@ -155,6 +157,7 @@ extension = env.SharedLibrary(
     LIBS=GMP_LIBS,
     SHLIBSUFFIX=SHLIBSUFFIX,
     CPPFLAGS=CPPFLAGS,
+    CXXFLAGS=CXXFLAGS,
     parse_flags=PARSE_FLAGS,
     # if you have some flags you know you want passed to the compiler but don't
     # know what they refer to in scons, you can use "parse_flags"
@@ -166,7 +169,10 @@ env["LIBPATH"].extend(LIBPATH)
 
 
 compile_asm = env.Program(
-    "src/compile_asm.cpp", LIBS=["pthread"] + GMP_LIBS, CPPFLAGS=CPPFLAGS
+    "src/compile_asm.cpp",
+    LIBS=["pthread"] + GMP_LIBS,
+    CPPFLAGS=CPPFLAGS,
+    CXXFLAGS=CXXFLAGS,
 )
 
 
@@ -182,7 +188,7 @@ env["BUILDERS"]["AsmCompiled"] = bld
 asm_compiled = env.AsmCompiled("asm_compiled.s", compile_asm)
 asm_compiled_avx2 = env.AsmCompiled("asm_compiled_avx2.s", compile_asm)
 
-asm_lib = env.Library("asm_compiled_lib", [asm_compiled, asm_compiled_avx2])
+asm_lib = env.Library("asm_compiled_lib", [asm_compiled, asm_compiled_avx2, LZCNT])
 
 VDF_CLIENT_SOURCE = ["src/vdf_client.cpp", asm_lib]
 vdf_client = env.Program(
@@ -190,6 +196,7 @@ vdf_client = env.Program(
     LIBS=GMP_LIBS + ["boost_system", "pthread"],
     LIBPATH=LIBPATH,
     CPPFLAGS=CPPFLAGS,
+    CXXFLAGS=CXXFLAGS,
 )
 env.Alias("vdf_client", vdf_client)
 
@@ -199,6 +206,7 @@ vdf_bench = env.Program(
     LIBS=GMP_LIBS + ["boost_system", "pthread"],
     LIBPATH=LIBPATH,
     CPPFLAGS=CPPFLAGS,
+    CXXFLAGS=CXXFLAGS,
 )
 env.Alias("vdf_bench", vdf_bench)
 
