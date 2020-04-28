@@ -70,6 +70,21 @@ if sys.platform == "win32":
 
 EXTRA_CPPPATH = [PYBIND11_PATH] + OTHER_HEADERS
 
+CPPFLAGS = []
+CXXFLAGS = ["-std=c++1z"]
+
+GMP_LIBS = ["gmp", "gmpxx"]
+COPIED_LIBS = []
+
+
+if sys.platform == "darwin":
+    CPPFLAGS.append("-mmacosx-version-min=10.14")
+    CPPFLAGS.append("-D CHIAOSX=1")
+    CPPFLAGS.append("-O3")
+
+if sys.platform == "win32":
+    CPPFLAGS = ["/EHsc", "/std:c++17"]
+
 
 env = Environment(
     tools=["default", "packaging", enscons.generate, enscons.cpyext.generate],
@@ -78,6 +93,8 @@ env = Environment(
     MSVC_VERSION=MSVC_VERSION,
     TARGET_ARCH=TARGET_ARCH,
     ENV={"PATH": os.environ["PATH"]},
+    CPPFLAGS=CPPFLAGS,
+    CXXFLAGS=CXXFLAGS,
 )
 env["CPPPATH"].extend(EXTRA_CPPPATH)
 
@@ -88,7 +105,10 @@ if sys.platform == "win32":
     WIN_PATH = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.18362.0\\x86\\"
     env["ENV"]["PATH"] = "%s;%s" % (env["ENV"]["PATH"], WIN_PATH)
     env["ENV"]["TMP"] = os.environ["TMP"]
-
+    # include the GMP libraries
+    GMP_LIBS = ["mpir"]
+    MPIR_DLL = env.Install(".", "mpir_gc_x64/mpir.dll")
+    COPIED_LIBS.append(MPIR_DLL)
 
 # seems to be related to abi3 (see c-api comment above)
 
@@ -121,24 +141,6 @@ sdist_source = SOURCE_DIST_FILES + [
 sdist = env.SDist(source=sdist_source)
 env.Alias("sdist", sdist)
 
-CPPFLAGS = []
-CXXFLAGS = ["-std=c++1z"]
-
-GMP_LIBS = ["gmp", "gmpxx"]
-COPIED_LIBS = []
-
-
-if sys.platform == "darwin":
-    CPPFLAGS.append("-mmacosx-version-min=10.14")
-    CPPFLAGS.append("-D CHIAOSX=1")
-    CPPFLAGS.append("-O3")
-
-if sys.platform == "win32":
-    CPPFLAGS = ["/EHsc", "/std:c++17"]
-    GMP_LIBS = ["mpir"]
-    MPIR_DLL = env.Install(".", "mpir_gc_x64/mpir.dll")
-    COPIED_LIBS.append(MPIR_DLL)
-
 
 LZCNT = ["src/refcode/lzcnt.c"]
 
@@ -159,8 +161,6 @@ extension = env.SharedLibrary(
     LIBPREFIX="",
     LIBS=GMP_LIBS,
     SHLIBSUFFIX=SHLIBSUFFIX,
-    CPPFLAGS=CPPFLAGS,
-    CXXFLAGS=CXXFLAGS,
     parse_flags=PARSE_FLAGS,
     # if you have some flags you know you want passed to the compiler but don't
     # know what they refer to in scons, you can use "parse_flags"
@@ -191,7 +191,12 @@ env["BUILDERS"]["AsmCompiled"] = bld
 asm_compiled = env.AsmCompiled("asm_compiled.s", compile_asm)
 asm_compiled_avx2 = env.AsmCompiled("asm_compiled_avx2.s", compile_asm)
 
-asm_lib = env.Library("asm_compiled_lib", [asm_compiled, asm_compiled_avx2, LZCNT])
+asm_lib = env.Library(
+    "asm_compiled_lib",
+    [asm_compiled, asm_compiled_avx2, LZCNT],
+    CPPFLAGS=CPPFLAGS,
+    CXXFLAGS=CXXFLAGS,
+)
 
 VDF_CLIENT_SOURCE = ["src/vdf_client.cpp", asm_lib]
 vdf_client = env.Program(
