@@ -52,7 +52,7 @@ jobs:
         CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.14
         CIBW_BUILD_VERBOSITY_MACOS: 0
         CIBW_TEST_REQUIRES: pytest
-        CIBW_TEST_COMMAND: py.test -v tests
+        CIBW_TEST_COMMAND: py.test -v {project}/tests
         CIBW_ENVIRONMENT_LINUX: BUILD_VDF_CLIENT=N
         CIBW_ENVIRONMENT_WINDOWS: BUILD_VDF_CLIENT=N
         CIBW_REPAIR_WHEEL_COMMAND_MACOS: "pip uninstall -y delocate && pip install git+https://github.com/Chia-Network/delocate.git && delocate-listdeps {wheel} && delocate-wheel -v {wheel} && cp {wheel} {dest_dir} && ls -l {dest_dir} && pwd && ls -l dist"
