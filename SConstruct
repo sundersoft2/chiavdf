@@ -121,7 +121,27 @@ sdist_source = SOURCE_DIST_FILES + [
 sdist = env.SDist(source=sdist_source)
 env.Alias("sdist", sdist)
 
-LZCNT = ["src/refcode/lzcnt.c"]
+CPPFLAGS = []
+CXXFLAGS = ["-std=c++1z"]
+
+GMP_LIBS = ["gmp", "gmpxx"]
+COPIED_LIBS = []
+
+
+if sys.platform == "darwin":
+    CPPFLAGS.append("-mmacosx-version-min=10.14")
+    CPPFLAGS.append("-D CHIAOSX=1")
+    CPPFLAGS.append("-O3")
+
+if sys.platform == "win32":
+    CPPFLAGS = ["/EHsc", "/std:c++17"]
+    GMP_LIBS = ["mpir"]
+    MPIR_DLL = env.Install(".", "mpir_gc_x64/mpir.dll")
+    COPIED_LIBS.append(MPIR_DLL)
+
+
+LZCNT = env.Object("src/refcode/lzcnt.c", CPPFLAGS=CPPFLAGS)
+
 EXT_SOURCE = [
     "src/python_bindings/fastvdf.cpp",
     LZCNT,
@@ -130,23 +150,6 @@ EXT_SOURCE = [
 # for abi3 we need -DPy_LIMITED_API=0x03030000 to modify the Python.h headers
 
 PARSE_FLAGS = "-DPy_LIMITED_API=0x03030000" if use_py_limited else ""
-
-CPPFLAGS = ["-O3"]
-CXXFLAGS = ["-std=c++1z"]
-
-GMP_LIBS = ["gmp", "gmpxx"]
-COPIED_LIBS = []
-
-if sys.platform == "darwin":
-    CPPFLAGS.append("-mmacosx-version-min=10.14")
-    CPPFLAGS.append("-D CHIAOSX=1")
-
-if sys.platform == "win32":
-    CPPFLAGS = ["/EHsc", "/std:c++17"]
-    GMP_LIBS = ["mpir"]
-    MPIR_DLL = env.Install(".", "mpir_gc_x64/mpir.dll")
-    COPIED_LIBS.append(MPIR_DLL)
-
 
 extension = env.SharedLibrary(
     # we need to pass the PATH environment variable through from the shell so we
