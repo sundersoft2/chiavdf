@@ -1,5 +1,5 @@
 [build-system]
-requires = ["pytoml>=0.1", "pybind11", "setuptools_scm[toml]>=3.5.0", "enscons @ git+https://github.com/richardkiss/enscons.git@17a96e311835ffb4f2aa45d1dc64c856fd4b4afc"]
+requires = ["pytoml>=0.1", "pybind11", "setuptools_scm[toml]>=3.5.0", "enscons @ git+https://github.com/richardkiss/enscons.git@844204c2995954cc20c26ebc004d561aae2b3d68"]
 
 build-backend = "enscons.api"
 
