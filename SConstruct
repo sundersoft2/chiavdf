@@ -140,7 +140,7 @@ if sys.platform == "win32":
     COPIED_LIBS.append(MPIR_DLL)
 
 
-LZCNT = env.Object("src/refcode/lzcnt.c", CPPFLAGS=CPPFLAGS)
+LZCNT = ["src/refcode/lzcnt.c"]
 
 EXT_SOURCE = [
     "src/python_bindings/fastvdf.cpp",
