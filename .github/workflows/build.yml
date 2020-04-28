@@ -29,6 +29,8 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         git clone https://github.com/Chia-Network/mpir_gc_x64.git
+        cd mpir_gc_x64
+        git checkout 612c13a582f7820fa4f5436fdb27cad50db622da
 
     - name: Build source distribution with MacOS
       if: startsWith(matrix.os, 'mac')
