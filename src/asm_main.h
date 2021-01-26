@@ -393,7 +393,7 @@ void compile_asm_avx512_add(int in_a_num_limbs, int in_b_num_limbs, int out_num_
 
     vector<reg_vector> out_registers;
 
-    for (int i=0;i<avx512::ceil_div(out_num_limbs, 8);++i) {
+    for (int i=0;i<ceil_div(out_num_limbs, 8);++i) {
         out_registers.push_back(regs.get_vector(512));
     }
 
@@ -463,7 +463,7 @@ void compile_asm_avx512_multiply(int in_a_num_limbs, int in_b_num_limbs, int out
 
     vector<reg_vector> out_registers;
 
-    for (int i=0;i<avx512::ceil_div(out_num_limbs, 8);++i) {
+    for (int i=0;i<ceil_div(out_num_limbs, 8);++i) {
         out_registers.push_back(regs.get_vector(512));
     }
 
@@ -475,11 +475,350 @@ void compile_asm_avx512_multiply(int in_a_num_limbs, int in_b_num_limbs, int out
 //
 //
 
+template<int expected_size, int padded_size, int expected_size_a, int padded_size_a>
+void asm_avx2_func_fast_integer_mul_add(
+    uint64* data, const uint64* a_data, uint64 b
+);
+
+#define declare_asm_avx2_func_fast_integer_mul_add(expected_size, padded_size, expected_size_a, padded_size_a)\
+extern "C" void asm_avx2_func_fast_integer_mul_add_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a(\
+    uint64* data, const uint64* a_data, uint64 b\
+);\
+template<> void asm_avx2_func_fast_integer_mul_add<expected_size, padded_size, expected_size_a, padded_size_a>(\
+    uint64* data, const uint64* a_data, uint64 b\
+) {\
+    return asm_avx2_func_fast_integer_mul_add_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a(\
+        data, a_data, b\
+    );\
+}
+
+#define for_each_asm_avx2_func_fast_integer_mul_add(func)\
+func(17, 23, 17, 23);\
+func( 9, 15,  9, 15);\
+func( 9, 15, 17, 23);\
+func(33, 39, 33, 39);
+
+#ifndef COMPILE_ASM
+for_each_asm_avx2_func_fast_integer_mul_add(declare_asm_avx2_func_fast_integer_mul_add)
+#endif
+
+#ifdef COMPILE_ASM
+void compile_asm_avx2_func_fast_integer_mul_add(int expected_size, int padded_size, int expected_size_a, int padded_size_a) {
+    EXPAND_MACROS_SCOPE;
+
+    asm_function c_func(str( "fast_integer_mul_add_#_#_#_#", expected_size, padded_size, expected_size_a, padded_size_a ), 3, 9, false, false);
+    reg_alloc regs=c_func.regs;
+
+    fast_integer::fast_asm_integer out;
+    out.addr_base=c_func.args.at(0);
+    out.size=expected_size;
+    out.padded_size=padded_size;
+    out.has_sign=false;
+
+    fast_integer::fast_asm_integer a;
+    a.addr_base=c_func.args.at(1);
+    a.size=expected_size_a;
+    a.padded_size=padded_size_a;
+    a.has_sign=false;
+
+    fast_integer::mul_add(regs, out, a, c_func.args.at(2), fast_integer::fast_asm_integer());
+}
+#endif
+
+//
+//
+
+template<int expected_size, int padded_size, int expected_size_a, int padded_size_a, int expected_size_b, int padded_size_b>
+void asm_avx2_func_fast_integer_add(
+    uint64* data, const uint64* a_data, const uint64* b_data, uint64 b_sign_mask
+);
+
+#define declare_asm_avx2_func_fast_integer_add(expected_size, padded_size, expected_size_a, padded_size_a, expected_size_b, padded_size_b)\
+extern "C" void asm_avx2_func_fast_integer_add_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a ## _ ## expected_size_b ## _ ## padded_size_b(\
+    uint64* data, const uint64* a_data, const uint64* b_data, uint64 b_sign_mask\
+);\
+template<> void asm_avx2_func_fast_integer_add<expected_size, padded_size, expected_size_a, padded_size_a, expected_size_b, padded_size_b>(\
+    uint64* data, const uint64* a_data, const uint64* b_data, uint64 b_sign_mask\
+) {\
+    return asm_avx2_func_fast_integer_add_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a ## _ ## expected_size_b ## _ ## padded_size_b(\
+        data, a_data, b_data, b_sign_mask\
+    );\
+}
+
+#define for_each_asm_avx2_func_fast_integer_add(func)\
+func(33, 39, 33, 39, 33, 39);\
+func(25, 31, 25, 31, 25, 31);\
+func(17, 23, 17, 23, 17, 23);\
+func( 9, 15,  9, 15,  9, 15);
+
+#ifndef COMPILE_ASM
+for_each_asm_avx2_func_fast_integer_add(declare_asm_avx2_func_fast_integer_add)
+#endif
+
+#ifdef COMPILE_ASM
+void compile_asm_avx2_func_fast_integer_add(int expected_size, int padded_size, int expected_size_a, int padded_size_a, int expected_size_b, int padded_size_b) {
+    EXPAND_MACROS_SCOPE;
+
+    asm_function c_func(str( "fast_integer_add_#_#_#_#_#_#", expected_size, padded_size, expected_size_a, padded_size_a, expected_size_b, padded_size_b ), 4, 9, true, false);
+    reg_alloc regs=c_func.regs;
+
+    fast_integer::fast_asm_integer out;
+    out.addr_base=c_func.args.at(0);
+    out.size=expected_size;
+    out.padded_size=padded_size;
+    out.has_sign=true;
+
+    fast_integer::fast_asm_integer a;
+    a.addr_base=c_func.args.at(1);
+    a.size=expected_size_a;
+    a.padded_size=padded_size_a;
+    a.has_sign=true;
+
+    fast_integer::fast_asm_integer b;
+    b.addr_base=c_func.args.at(2);
+    b.size=expected_size_b;
+    b.padded_size=padded_size_b;
+    b.has_sign=true;
+
+    fast_integer::add(regs, out, a, b, c_func.args.at(3));
+}
+#endif
+
+//
+//
+
+template<int expected_size, int padded_size, int expected_size_a, int padded_size_a, int expected_size_b, int padded_size_b>
+void asm_avx2_func_fast_integer_mul(
+    uint64* data, const uint64* a_data, const uint64* b_data
+);
+
+#define declare_asm_avx2_func_fast_integer_mul(expected_size, padded_size, expected_size_a, padded_size_a, expected_size_b, padded_size_b)\
+extern "C" void asm_avx2_func_fast_integer_mul_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a ## _ ## expected_size_b ## _ ## padded_size_b(\
+    uint64* data, const uint64* a_data, const uint64* b_data\
+);\
+template<> void asm_avx2_func_fast_integer_mul<expected_size, padded_size, expected_size_a, padded_size_a, expected_size_b, padded_size_b>(\
+    uint64* data, const uint64* a_data, const uint64* b_data\
+) {\
+    return asm_avx2_func_fast_integer_mul_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a ## _ ## expected_size_b ## _ ## padded_size_b(\
+        data, a_data, b_data\
+    );\
+}
+
+#define for_each_asm_avx2_func_fast_integer_mul(func)\
+func(33, 39, 17, 23, 17, 23);\
+func(25, 31, 33, 39,  9, 15);\
+func(25, 31, 17, 23, 17, 23);\
+func(17, 23,  9, 15, 17, 23);\
+func(33, 39, 33, 39, 33, 39);\
+func(25, 31,  9, 15, 17, 23);\
+func(17, 23, 17, 23,  9, 15);\
+func(17, 23, 17, 23, 17, 23);
+
+#ifndef COMPILE_ASM
+for_each_asm_avx2_func_fast_integer_mul(declare_asm_avx2_func_fast_integer_mul)
+#endif
+
+#ifdef COMPILE_ASM
+void compile_asm_avx2_func_fast_integer_mul(int expected_size, int padded_size, int expected_size_a, int padded_size_a, int expected_size_b, int padded_size_b) {
+    EXPAND_MACROS_SCOPE;
+
+    asm_function c_func(str( "fast_integer_mul_#_#_#_#_#_#", expected_size, padded_size, expected_size_a, padded_size_a, expected_size_b, padded_size_b ), 3, 9, false, false);
+    reg_alloc regs=c_func.regs;
+
+    fast_integer::fast_asm_integer out;
+    out.addr_base=c_func.args.at(0);
+    out.size=expected_size;
+    out.padded_size=padded_size;
+    out.has_sign=true;
+
+    fast_integer::fast_asm_integer a;
+    a.addr_base=c_func.args.at(1);
+    a.size=expected_size_a;
+    a.padded_size=padded_size_a;
+    a.has_sign=true;
+
+    fast_integer::fast_asm_integer b;
+    b.addr_base=regs.get_scalar();
+    b.size=expected_size_b;
+    b.padded_size=padded_size_b;
+    b.has_sign=true;
+
+    APPEND_M(str( "MOV #, #", b.addr_base.name(), c_func.args.at(2).name() ));
+
+    regs.add(c_func.args.at(2));
+
+    if (a.size<b.size) {
+        swap(a, b);
+    }
+
+    fast_integer::mul(regs, out, a, b);
+}
+#endif
+
+//
+//
+
+template<int expected_size, int padded_size, int expected_size_a, int padded_size_a>
+int asm_avx2_func_fast_integer_cmp_abs_1(
+    const uint64* data, const uint64* a_data
+);
+
+#define declare_asm_avx2_func_fast_integer_cmp_abs_1(expected_size, padded_size, expected_size_a, padded_size_a)\
+extern "C" int asm_avx2_func_fast_integer_cmp_abs_1_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a(\
+    const uint64* data, const uint64* a_data\
+);\
+template<> int asm_avx2_func_fast_integer_cmp_abs_1<expected_size, padded_size, expected_size_a, padded_size_a>(\
+    const uint64* data, const uint64* a_data\
+) {\
+    return asm_avx2_func_fast_integer_cmp_abs_1_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a(\
+        data, a_data\
+    );\
+}
+
+#define for_each_asm_avx2_func_fast_integer_cmp_abs_1(func)\
+func(17, 23, 17, 23);
+
+#ifndef COMPILE_ASM
+for_each_asm_avx2_func_fast_integer_cmp_abs_1(declare_asm_avx2_func_fast_integer_cmp_abs_1)
+#endif
+
+#ifdef COMPILE_ASM
+void compile_asm_avx2_func_fast_integer_cmp_abs_1(int expected_size, int padded_size, int expected_size_a, int padded_size_a) {
+    EXPAND_MACROS_SCOPE;
+
+    asm_function c_func(str( "fast_integer_cmp_abs_1_#_#_#_#", expected_size, padded_size, expected_size_a, padded_size_a ), 2, 9, false, false);
+    reg_alloc regs=c_func.regs;
+
+    fast_integer::fast_asm_integer a;
+    a.addr_base=c_func.args.at(0);
+    a.size=expected_size;
+    a.padded_size=padded_size;
+    a.has_sign=true;
+
+    fast_integer::fast_asm_integer b;
+    b.addr_base=c_func.args.at(1);
+    b.size=expected_size_a;
+    b.padded_size=padded_size_a;
+    b.has_sign=true;
+
+    fast_integer::cmp_abs_1(regs, c_func.return_reg, a, b);
+}
+#endif
+
+//
+//
+
+template<int expected_size, int padded_size, int expected_size_a, int padded_size_a>
+int asm_avx2_func_fast_integer_cmp(
+    const uint64* data, const uint64* a_data
+);
+
+#define declare_asm_avx2_func_fast_integer_cmp(expected_size, padded_size, expected_size_a, padded_size_a)\
+extern "C" int asm_avx2_func_fast_integer_cmp_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a(\
+    const uint64* data, const uint64* a_data\
+);\
+template<> int asm_avx2_func_fast_integer_cmp<expected_size, padded_size, expected_size_a, padded_size_a>(\
+    const uint64* data, const uint64* a_data\
+) {\
+    return asm_avx2_func_fast_integer_cmp_ ## expected_size ## _ ## padded_size ## _ ## expected_size_a ## _ ## padded_size_a(\
+        data, a_data\
+    );\
+}
+
+#define for_each_asm_avx2_func_fast_integer_cmp(func)\
+func(17, 23, 17, 23);
+
+#ifndef COMPILE_ASM
+for_each_asm_avx2_func_fast_integer_cmp(declare_asm_avx2_func_fast_integer_cmp)
+#endif
+
+#ifdef COMPILE_ASM
+void compile_asm_avx2_func_fast_integer_cmp(int expected_size, int padded_size, int expected_size_a, int padded_size_a) {
+    EXPAND_MACROS_SCOPE;
+
+    asm_function c_func(str( "fast_integer_cmp_#_#_#_#", expected_size, padded_size, expected_size_a, padded_size_a ), 2, 9, false, false);
+    reg_alloc regs=c_func.regs;
+
+    fast_integer::fast_asm_integer a;
+    a.addr_base=c_func.args.at(0);
+    a.size=expected_size;
+    a.padded_size=padded_size;
+    a.has_sign=true;
+
+    fast_integer::fast_asm_integer b;
+    b.addr_base=c_func.args.at(1);
+    b.size=expected_size_a;
+    b.padded_size=padded_size_a;
+    b.has_sign=true;
+
+    fast_integer::cmp(regs, c_func.return_reg, a, b);
+}
+#endif
+
+//
+//
+
+template<int expected_size, int padded_size>
+int asm_avx2_func_fast_integer_size_limbs(
+    const uint64* data
+);
+
+#define declare_asm_avx2_func_fast_integer_size_limbs(expected_size, padded_size)\
+extern "C" int asm_avx2_func_fast_integer_size_limbs_ ## expected_size ## _ ## padded_size(\
+    const uint64* data\
+);\
+template<> int asm_avx2_func_fast_integer_size_limbs<expected_size, padded_size>(\
+    const uint64* data\
+) {\
+    return asm_avx2_func_fast_integer_size_limbs_ ## expected_size ## _ ## padded_size(\
+        data\
+    );\
+}
+
+#define for_each_asm_avx2_func_fast_integer_size_limbs(func)\
+func( 9, 15);\
+func(17, 23);\
+func(25, 31);\
+func(33, 39);
+
+#ifndef COMPILE_ASM
+for_each_asm_avx2_func_fast_integer_size_limbs(declare_asm_avx2_func_fast_integer_size_limbs)
+#endif
+
+#ifdef COMPILE_ASM
+void compile_asm_avx2_func_fast_integer_size_limbs(int expected_size, int padded_size) {
+    EXPAND_MACROS_SCOPE;
+
+    asm_function c_func(str( "fast_integer_size_limbs_#_#", expected_size, padded_size ), 1, 9, false, false);
+    reg_alloc regs=c_func.regs;
+
+    fast_integer::fast_asm_integer a;
+    a.addr_base=c_func.args.at(0);
+    a.size=expected_size;
+    a.padded_size=padded_size;
+    a.has_sign=true;
+
+    fast_integer::size_limbs(regs, c_func.return_reg, a);
+}
+#endif
+
+//
+//
+
 #ifdef COMPILE_ASM
 void compile_asm(std::string filename) {
     compile_asm_gcd_base();
     compile_asm_gcd_128();
     compile_asm_gcd_unsigned();
+
+    if (enable_all_instructions) {
+        for_each_asm_avx2_func_fast_integer_mul_add(compile_asm_avx2_func_fast_integer_mul_add)
+        for_each_asm_avx2_func_fast_integer_add(compile_asm_avx2_func_fast_integer_add)
+        for_each_asm_avx2_func_fast_integer_mul(compile_asm_avx2_func_fast_integer_mul)
+        for_each_asm_avx2_func_fast_integer_cmp_abs_1(compile_asm_avx2_func_fast_integer_cmp_abs_1)
+        for_each_asm_avx2_func_fast_integer_cmp(compile_asm_avx2_func_fast_integer_cmp)
+        for_each_asm_avx2_func_fast_integer_size_limbs(compile_asm_avx2_func_fast_integer_size_limbs)
+    }
 
     ofstream out( filename );
     out << m.format_res_text();

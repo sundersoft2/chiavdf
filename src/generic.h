@@ -4,6 +4,10 @@
 #ifndef ILYA_SHARED_HEADER_GENERIC
 #define ILYA_SHARED_HEADER_GENERIC
 
+constexpr int ceil_div(int a, int b) {
+    return (a+b-1)/b;
+}
+
 namespace generic {
 using namespace std;
 

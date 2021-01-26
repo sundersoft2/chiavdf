@@ -172,10 +172,20 @@ public:
                     //cout << "NL_SQUARESTATE" << endl;
                     uint64 res;
 
-                    square_state_type *square_state=(square_state_type *)data;
+                    if (hasAVX2()) {
+                        square_state_type_fast *square_state=(square_state_type_fast *)data;
 
-                    if(!square_state->assign(mulf->a, mulf->b, mulf->c, res))
-                        cout << "square_state->assign failed" << endl;
+                        if(!square_state->assign(mulf->a, mulf->b, mulf->c, res)) {
+                            cout << "square_state->assign failed" << endl;
+                        }
+                    } else {
+                        square_state_type_mpz *square_state=(square_state_type_mpz *)data;
+
+                        if(!square_state->assign(mulf->a, mulf->b, mulf->c, res)) {
+                            cout << "square_state->assign failed" << endl;
+                        }
+                    }
+
                     break;
                 }
                 case NL_FORM:
@@ -260,10 +270,18 @@ void repeated_square(form f, const integer& D, const integer& L, WesolowskiCallb
         #endif
 
         // This works single threaded
-        square_state_type square_state;
-        square_state.pairindex=0;
+        square_state_type_mpz square_state_mpz;
+        square_state_type_fast square_state_fast;
+        square_state_mpz.pairindex=0;
+        square_state_fast.pairindex=0;
 
-        uint64 actual_iterations=repeated_square_fast(square_state, f, D, L, num_iterations, batch_size, &weso);
+        uint64 actual_iterations;
+        
+        if (hasAVX2()) {
+            actual_iterations=repeated_square_fast(square_state_fast, f, D, L, num_iterations, batch_size, &weso);
+        } else {
+            actual_iterations=repeated_square_fast(square_state_mpz, f, D, L, num_iterations, batch_size, &weso);
+        }
 
         #ifdef VDF_TEST
             ++num_calls_fast;

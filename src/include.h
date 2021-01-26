@@ -45,6 +45,7 @@ typedef __int128 int128;
 #include <thread>
 #include "generic.h"
 #include <gmpxx.h>
+#include <immintrin.h>
 
 using namespace std;
 using namespace generic;

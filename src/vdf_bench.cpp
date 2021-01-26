@@ -11,7 +11,8 @@
 
 #include "threading.h"
 #include "avx512_integer.h"
-#include "vdf_fast.h"
+#include "fast_integer.h"
+#include "vdf_fast_new.h"
 #include "create_discriminant.h"
 
 #include <cstdlib>
@@ -48,11 +49,19 @@ int main(int argc, char **argv)
     if (!strcmp(argv[1], "square_asm")) {
         is_asm = true;
         for (i = 0; i < iters; ) {
-            square_state_type sq_state;
-            sq_state.pairindex = 0;
+            square_state_type_mpz sq_state_mpz;
+            sq_state_mpz.pairindex = 0;
+
+            square_state_type_fast sq_state_fast;
+            sq_state_fast.pairindex = 0;
+
             uint64_t done;
 
-            done = repeated_square_fast(sq_state, y, D, L, 0, iters - i, NULL);
+            if (hasAVX2()) {
+                done = repeated_square_fast(sq_state_fast, y, D, L, 0, iters - i, NULL);
+            } else {
+                done = repeated_square_fast(sq_state_mpz, y, D, L, 0, iters - i, NULL);
+            }
             if (!done) {
                 nudupl_form(y, y, D, L);
                 reducer.reduce(y);

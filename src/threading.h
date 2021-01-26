@@ -251,7 +251,7 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
     }
 
     //can't call any mpz functions here because it is global
-    mpz() {
+    void init_mpz() {
         c_mpz._mp_size=0;
         c_mpz._mp_d=(mp_limb_t *)data;
         c_mpz._mp_alloc=padded_size;
@@ -261,6 +261,10 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
 
         //mp_free_func uses this to decide whether to free or not
         assert((uint64(c_mpz._mp_d)&63)==0);
+    }
+
+    mpz() {
+        init_mpz();
     }
 
     ~mpz() {
@@ -274,9 +278,6 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
         assert((uint64(c_mpz._mp_d)&63)==16 || c_mpz._mp_d==data);
         mpz_clear(&c_mpz);
     }
-
-    mpz(const mpz& t)=delete;
-    mpz(mpz&& t)=delete;
 
     mpz& operator=(const mpz_struct* t) {
         mpz_set(*this, t);
@@ -307,6 +308,22 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
         int res=mpz_set_str(*this, s.c_str(), 0);
         assert(res==0);
         return *this;
+    }
+
+    mpz(const mpz& t) {
+        init_mpz();
+
+        *this=t;
+    }
+
+    mpz(mpz&& t) {
+        init_mpz();
+
+        *this=t;
+    }
+
+    void set(mpz_struct* t) const {
+        mpz_set(t, *this);
     }
 
     USED string to_string() const {
@@ -370,10 +387,10 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
         return *this;
     }
 
-    /*void set_mul(const mpz_struct* a, const mpz_struct* b) {
-        todo
-        mpz_mul(*this, a, b);
-    }*/
+    //void set_mul(const mpz_struct* a, const mpz_struct* b) {
+        //todo
+        //mpz_mul(*this, a, b);
+    //}
 
     template<int expected_size_a, int padded_size_a, int expected_size_b, int padded_size_b>
     void set_mul(const mpz<expected_size_a, padded_size_a>& a, const mpz<expected_size_b, padded_size_b>& b) {
@@ -415,7 +432,6 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
 
     //*this+=a*b
     void set_add_mul(const mpz_struct* a, const mpz_struct* b) {
-        todo
         mpz_addmul(*this, a, b);
     }
 
@@ -423,13 +439,11 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
         mpz_addmul_ui(*this, a, b);
     }
 
-    //*this-=a*b
     void set_sub_mul(const mpz_struct* a, const mpz_struct* b) {
-        todo
         mpz_submul(*this, a, b);
     }
 
-    void set_sub_mul(const mpz_struct* a, uint64 b) {
+    void set_sub_mul(const mpz_struct* a, uint64 b, mpz_struct* buffer) {
         mpz_submul_ui(*this, a, b);
     }
 
@@ -502,26 +516,30 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
         return *this;
     }
 
-    bool operator<(const mpz_struct* t) const { return mpz_cmp(*this, t)<0; }
-    bool operator<=(const mpz_struct* t) const { return mpz_cmp(*this, t)<=0; }
-    bool operator==(const mpz_struct* t) const { return mpz_cmp(*this, t)==0; }
-    bool operator>=(const mpz_struct* t) const { return mpz_cmp(*this, t)>=0; }
-    bool operator>(const mpz_struct* t) const { return mpz_cmp(*this, t)>0; }
-    bool operator!=(const mpz_struct* t) const { return mpz_cmp(*this, t)!=0; }
+    template<class t_mpz> bool operator<(const t_mpz& t) const { return mpz_cmp(*this, t)<0; }
+    template<class t_mpz> bool operator<=(const t_mpz& t) const { return mpz_cmp(*this, t)<=0; }
+    template<class t_mpz> bool equal(const t_mpz& t) const { return mpz_cmp(*this, t)==0; }
+    template<class t_mpz> bool operator>=(const t_mpz& t) const { return mpz_cmp(*this, t)>=0; }
+    template<class t_mpz> bool operator>(const t_mpz& t) const { return mpz_cmp(*this, t)>0; }
+    template<class t_mpz> bool not_equal(const t_mpz& t) const { return mpz_cmp(*this, t)!=0; }
 
     bool operator<(int64 i) const { return mpz_cmp_si(*this, i)<0; }
     bool operator<=(int64 i) const { return mpz_cmp_si(*this, i)<=0; }
-    bool operator==(int64 i) const { return mpz_cmp_si(*this, i)==0; }
+    bool equal(int64 i) const { return mpz_cmp_si(*this, i)==0; }
     bool operator>=(int64 i) const { return mpz_cmp_si(*this, i)>=0; }
     bool operator>(int64 i) const { return mpz_cmp_si(*this, i)>0; }
-    bool operator!=(int64 i) const { return mpz_cmp_si(*this, i)!=0; }
+    bool not_equal(int64 i) const { return mpz_cmp_si(*this, i)!=0; }
 
     bool operator<(uint64 i) const { return mpz_cmp_ui(_(), i)<0; }
     bool operator<=(uint64 i) const { return mpz_cmp_ui(_(), i)<=0; }
-    bool operator==(uint64 i) const { return mpz_cmp_ui(_(), i)==0; }
+    bool equal(uint64 i) const { return mpz_cmp_ui(_(), i)==0; }
     bool operator>=(uint64 i) const { return mpz_cmp_ui(_(), i)>=0; }
     bool operator>(uint64 i) const { return mpz_cmp_ui(_(), i)>0; }
-    bool operator!=(uint64 i) const { return mpz_cmp_ui(_(), i)!=0; }
+    bool not_equal(uint64 i) const { return mpz_cmp_ui(_(), i)!=0; }
+
+    int compare(const mpz_struct* t) const {
+        return mpz_cmp(*this, t);
+    }
 
     int compare_abs(const mpz_struct* t) const {
         return mpz_cmpabs(*this, t);
@@ -534,6 +552,16 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
     //returns 0 if *this==0
     int sgn() const {
         return mpz_sgn(_());
+    }
+
+    //undefined if *this==0
+    bool is_negative_nonzero() const {
+        assert(sgn()!=0);
+        return sgn()<0;
+    }
+
+    bool is_nonzero() const {
+        return sgn()!=0;
     }
 
     int num_bits() const {
@@ -550,12 +578,12 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
     }
 
     //limbs are uninitialized. call finish
-    uint64* write_limbs(int num) {
+    template<int num> uint64* write_limbs() {
         return (uint64*)mpz_limbs_write(*this, num);
     }
 
     //limbs are zero padded to the specified size. call finish
-    uint64* modify_limbs(int num) {
+    template<int num> uint64* modify_limbs() {
         int old_size=num_limbs();
 
         uint64* res=(uint64*)mpz_limbs_modify(*this, num);
@@ -571,7 +599,7 @@ template<int d_expected_size, int d_padded_size> struct alignas(64) mpz {
     //num is whatever was passed to write_limbs or modify_limbs
     //it can be less than that as long as it is at least the number of nonzero limbs
     //it can be 0 if the result is 0
-    void finish(int num, bool negative=false) {
+    template<int num, bool negative> void finish() {
         mpz_limbs_finish(*this, (negative)? -num : num);
     }
 
@@ -793,12 +821,14 @@ struct alignas(64) gcd_uv_entry {
     uint64 unused_0;
     uint64 unused_1;
 
-    template<class mpz_type> void matrix_multiply(const mpz_type& in_a, const mpz_type& in_b, mpz_type& out_a, mpz_type& out_b) const {
+    template<class mpz_type> void matrix_multiply(
+        const mpz_type& in_a, const mpz_type& in_b, mpz_type& out_a, mpz_type& out_b, mpz_type& buffer
+    ) const {
         out_a.set_mul((parity==0)? in_a : in_b, (parity==0)? u_0 : v_0);
-        out_a.set_sub_mul((parity==0)? in_b : in_a, (parity==0)? v_0 : u_0);
+        out_a.set_sub_mul((parity==0)? in_b : in_a, (parity==0)? v_0 : u_0, buffer);
 
         out_b.set_mul((parity==0)? in_b : in_a, (parity==0)? v_1 : u_1);
-        out_b.set_sub_mul((parity==0)? in_a : in_b, (parity==0)? u_1 : v_1);
+        out_b.set_sub_mul((parity==0)? in_a : in_b, (parity==0)? u_1 : v_1, buffer);
     }
 };
 static_assert(sizeof(gcd_uv_entry)==64, "");
@@ -872,10 +902,10 @@ template<class mpz_type> bool gcd_unsigned(
     }
 
     asm_code::asm_func_gcd_unsigned_data data;
-    data.a=c_results.as[0].modify_limbs(gcd_size);
-    data.b=c_results.bs[0].modify_limbs(gcd_size);
-    data.a_2=c_results.as[1].write_limbs(gcd_size);
-    data.b_2=c_results.bs[1].write_limbs(gcd_size);
+    data.a=c_results.as[0].template modify_limbs<gcd_size>();
+    data.b=c_results.bs[0].template modify_limbs<gcd_size>();
+    data.a_2=c_results.as[1].template write_limbs<gcd_size>();
+    data.b_2=c_results.bs[1].template write_limbs<gcd_size>();
     data.threshold=(uint64*)&threshold[0];
 
     data.uv_counter_start=c_thread_state.counter_start+counter_start_delta+1;
@@ -905,15 +935,15 @@ template<class mpz_type> bool gcd_unsigned(
 
     c_results.end_index=(is_even)? 1 : 0;
 
-    c_results.as[0].finish(gcd_size);
-    c_results.as[1].finish(gcd_size);
-    c_results.bs[0].finish(gcd_size);
-    c_results.bs[1].finish(gcd_size);
+    c_results.as[0].template finish<gcd_size, false>();
+    c_results.as[1].template finish<gcd_size, false>();
+    c_results.bs[0].template finish<gcd_size, false>();
+    c_results.bs[1].template finish<gcd_size, false>();
 
-    inject_error(c_results.as[0]);
-    inject_error(c_results.as[1]);
-    inject_error(c_results.bs[0]);
-    inject_error(c_results.bs[1]);
+    //inject_error(c_results.as[0]);
+    //inject_error(c_results.as[1]);
+    //inject_error(c_results.bs[0]);
+    //inject_error(c_results.bs[1]);
 
     if (!c_thread_state.advance(counter_start_delta+gcd_results_type<mpz_type>::num_counter)) {
         return false;

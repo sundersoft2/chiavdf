@@ -14,10 +14,6 @@ namespace asm_code { namespace avx512 {
 //--the start padding is before the data pointer
 //-the data can also be stored in registers instead. any unused limbs are 0
 
-int ceil_div(int a, int b) {
-    return (a+b-1)/b;
-}
-
 struct gmp_integer {
     reg_scalar num_limbs;
     int max_num_limbs=-1; //will write past the end of this if it isn't a multiple of 8

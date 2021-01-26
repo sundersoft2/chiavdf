@@ -30,7 +30,7 @@ void xgcd_partial(integer& u, integer& v, integer& a, integer& b, const integer&
     mpz_clear(f_L);
 }
 
-void inject_error(mpz_struct* i) {
+/*void inject_error(mpz_struct* i) {
     if (!enable_random_error_injection) {
         return;
     }
@@ -46,7 +46,7 @@ void inject_error(mpz_struct* i) {
         pos%=mpz_sizeinbase(i, 2);
         mpz_combit(i, pos);
     }
-}
+} */
 
 // end Headerguard INTEGER_H
 #endif

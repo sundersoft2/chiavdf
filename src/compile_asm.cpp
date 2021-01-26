@@ -37,6 +37,7 @@ bool enable_all_instructions=false;
 #include "asm_gcd_128.h"
 #include "asm_gcd_unsigned.h"
 #include "asm_avx512_ifma.h"
+#include "asm_fast_integer.h"
 
 #include "asm_main.h"
 

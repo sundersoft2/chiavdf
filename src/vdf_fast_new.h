@@ -10,10 +10,25 @@ static_assert(sizeof(mpz_33)==6*64);
 
 //these all have at least 64 extra bits before they reallocate
 //x is the discriminant number of bits divided by 4
-typedef mpz_9 int1x;
-typedef mpz_17 int2x;
-typedef mpz_25 int3x;
-typedef mpz_33 int4x;
+typedef mpz_9 int1x_mpz;
+typedef mpz_17 int2x_mpz;
+typedef mpz_25 int3x_mpz;
+typedef mpz_33 int4x_mpz;
+
+static_assert(sizeof(mpz_9 )==3*64);
+static_assert(sizeof(mpz_17)==4*64);
+static_assert(sizeof(mpz_25)==5*64);
+static_assert(sizeof(mpz_33)==6*64);
+
+typedef mpz_fast< 9, 15> int1x_fast; //2 cache lines
+typedef mpz_fast<17, 23> int2x_fast; //3 cache lines
+typedef mpz_fast<25, 31> int3x_fast; //4 cache lines
+typedef mpz_fast<33, 39> int4x_fast; //5 cache lines
+
+//static_assert(sizeof(int1x_fast)==2*64);
+//static_assert(sizeof(int2x_fast)==3*64);
+//static_assert(sizeof(int3x_fast)==4*64);
+//static_assert(sizeof(int4x_fast)==5*64);
 
 //GMP integer num limbs -> avx512 num limbs:
 //  9 -> 12
@@ -30,11 +45,11 @@ static_assert(sizeof(avx512_int2x)==6*64);
 static_assert(sizeof(avx512_int3x)==7*64);
 static_assert(sizeof(avx512_int4x)==9*64);
 
-typedef gcd_results_type<int2x> gcd_results_int2x;
-
 //this is accessed by both threads
 //all divisions are exact
-struct square_state_type {
+template<class int1x, class int2x, class int3x, class int4x> struct square_state_type {
+    typedef gcd_results_type<int2x> gcd_results_int2x;
+
     int pairindex;
 
     //running the gcd will advance the counter value by this much on both the master and slave threads
@@ -432,9 +447,9 @@ struct square_state_type {
             // k=(-U0*c)%a
             auto& in_U0=U0s[k_index_local];
 
-            in_U0.set_mul(in_U0, c);
-            in_U0.negate();
-            in_U0.set_mod(in_U0, a);
+            int4x_buffer_slave.set_mul(in_U0, c);
+            int4x_buffer_slave.negate();
+            in_U0.set_mod(int4x_buffer_slave, a);
         }
 
         //inject_error(U0s[k_index_local]);
@@ -794,13 +809,7 @@ struct square_state_type {
 
             auto& gcd_1_0=phase_0_master_d.gcd_1_0;
 
-            int2x foo;
-            foo=uint64(1);
-
-            //if (gcd_1_0.get_a_end()!=phase_constant.one) {
-            //if (gcd_1_0.get_a_end()!=uint64(1ull)) {
-            if (gcd_1_0.get_a_end()!=foo) {
-                assert(gcd_1_0.get_a_end()!=uint64(1ull));
+            if (gcd_1_0.get_a_end().not_equal(phase_constant.one)) {
                 assert(!is_vdf_test);
                 phase_start.corruption_flag=true;
                 return false;
@@ -871,12 +880,12 @@ struct square_state_type {
         int2x zero;
         zero=uint64(0);
 
-        phase_constant.one=uint64(1ull);
+        phase_constant.one=uint64(1);
 
         phase_constant.D=t_D.impl;
         phase_constant.L=t_L.impl;
-        phase_constant.gcd_zero=zero.to_array<gcd_size>();
-        phase_constant.gcd_L=phase_constant.L.to_array<gcd_size>();
+        phase_constant.gcd_zero=zero.template to_array<gcd_size>();
+        phase_constant.gcd_L=phase_constant.L.template to_array<gcd_size>();
 
         phase_start.ab_index=0;
         phase_start.num_valid_iterations=0;
@@ -946,21 +955,19 @@ struct square_state_type {
         auto& c_remainder       =phase_0_slave_d.c_remainder;
 
         b_b.set_mul(b, b);
-        //a_4.set_mul(a, uint64(4));
-        a_4.set_left_shift(a, 2);
+        a_4.set_mul(a, uint64(4));
         b_b_D.set_sub(b_b, D);
 
         c.set_divide_floor(b_b_D, a_4, c_remainder);
-        //if (c_remainder.is_nonzero() || a.is_negative_nonzero() || c.is_negative_nonzero()) {
-        if (c_remainder.sgn()!=0 || a.sgn()<0 || c.sgn()<0) {
+        if (c_remainder.is_nonzero() || a.is_negative_nonzero() || c.is_negative_nonzero()) {
             assert(!is_vdf_test);
             num_iterations=~uint64(0);
             return false;
         }
 
-        mpz_set(t_a.impl, a);
-        mpz_set(t_b.impl, b);
-        mpz_set(t_c.impl, c);
+        a.set(t_a.impl); //mpz_set(t_a.impl, a);
+        b.set(t_b.impl); //mpz_set(t_b.impl, b);
+        c.set(t_c.impl); //mpz_set(t_c.impl, c);
 
         return true;
     }
@@ -1015,7 +1022,8 @@ public:
 
 //this should never have an infinite loop
 //the gcd loops all have maximum counters after which they'll error out, and the thread_state loops also have a maximum spin counter
-void repeated_square_fast_work(square_state_type &square_state,bool is_slave, uint64 base, uint64 iterations, INUDUPLListener *nuduplListener) {
+template<class int1x, class int2x, class int3x, class int4x>
+void repeated_square_fast_work(square_state_type<int1x, int2x, int3x, int4x> &square_state, bool is_slave, uint64 base, uint64 iterations, INUDUPLListener *nuduplListener) {
     c_thread_state.reset();
     c_thread_state.is_slave=is_slave;
     c_thread_state.pairindex=square_state.pairindex;
@@ -1025,7 +1033,7 @@ void repeated_square_fast_work(square_state_type &square_state,bool is_slave, ui
     for (uint64 iter=0;iter<iterations;++iter) {
         TRACK_CYCLES //master: 35895; slave: 35905
 
-        for (int phase=0;phase<square_state_type::num_phases;++phase) {
+        for (int phase=0;phase<square_state_type<int1x, int2x, int3x, int4x>::num_phases;++phase) {
             if (!c_thread_state.advance(square_state.get_counter_start(phase))) {
                 c_thread_state.raise_error();
                 has_error=true;
@@ -1043,7 +1051,7 @@ void repeated_square_fast_work(square_state_type &square_state,bool is_slave, ui
             break;
         }
 
-        c_thread_state.counter_start+=square_state_type::counter_end;
+        c_thread_state.counter_start+=square_state_type<int1x, int2x, int3x, int4x>::counter_end;
 
         if(!is_slave)
         {
@@ -1067,14 +1075,18 @@ void repeated_square_fast_work(square_state_type &square_state,bool is_slave, ui
     #endif
 }
 
-uint64 repeated_square_fast_multithread(square_state_type &square_state, form& f, const integer& D, const integer& L, uint64 base, uint64 iterations, INUDUPLListener *nuduplListener) {
+template<class int1x, class int2x, class int3x, class int4x>
+uint64 repeated_square_fast_multithread(square_state_type<int1x, int2x, int3x, int4x> &square_state, form& f, const integer& D, const integer& L, uint64 base, uint64 iterations, INUDUPLListener *nuduplListener) {
     master_counter[square_state.pairindex].reset();
     slave_counter[square_state.pairindex].reset();
 
     square_state.init(D, L, f.a, f.b);
     memory_barrier();
 
-    thread slave_thread(repeated_square_fast_work, std::ref(square_state), false, base, iterations, std::ref(nuduplListener));
+    thread slave_thread(
+        repeated_square_fast_work<int1x, int2x, int3x, int4x>,
+        std::ref(square_state), false, base, iterations, std::ref(nuduplListener)
+    );
 
     repeated_square_fast_work(square_state, true, base, iterations, nuduplListener);
 
@@ -1087,7 +1099,11 @@ uint64 repeated_square_fast_multithread(square_state_type &square_state, form& f
     return res;
 }
 
-uint64 repeated_square_fast_single_thread(square_state_type &square_state, form& f, const integer& D, const integer& L, uint64 base, uint64 iterations, INUDUPLListener *nuduplListener) {
+template<class int1x, class int2x, class int3x, class int4x>
+uint64 repeated_square_fast_single_thread(
+    square_state_type<int1x, int2x, int3x, int4x> &square_state,
+    form& f, const integer& D, const integer& L, uint64 base, uint64 iterations, INUDUPLListener *nuduplListener
+) {
     master_counter[square_state.pairindex].reset();
     slave_counter[square_state.pairindex].reset();
 
@@ -1109,7 +1125,7 @@ uint64 repeated_square_fast_single_thread(square_state_type &square_state, form&
     for (uint64 iter=0;iter<iterations;++iter) {
         TRACK_CYCLES
 
-        for (int phase=0;phase<square_state_type::num_phases;++phase) {
+        for (int phase=0;phase<square_state_type<int1x, int2x, int3x, int4x>::num_phases;++phase) {
             if (!thread_state_master.advance(square_state.get_counter_start(phase))) {
                 thread_state_master.raise_error();
                 has_error=true;
@@ -1143,8 +1159,8 @@ uint64 repeated_square_fast_single_thread(square_state_type &square_state, form&
             break;
         }
 
-        thread_state_master.counter_start+=square_state_type::counter_end;
-        thread_state_slave.counter_start+=square_state_type::counter_end;
+        thread_state_master.counter_start+=square_state_type<int1x, int2x, int3x, int4x>::counter_end;
+        thread_state_slave.counter_start+=square_state_type<int1x, int2x, int3x, int4x>::counter_end;
 
         if(nuduplListener!=NULL)
             nuduplListener->OnIteration(NL_SQUARESTATE,&square_state,base+iter);
@@ -1161,12 +1177,10 @@ uint64 repeated_square_fast_single_thread(square_state_type &square_state, form&
     return res;
 }
 
-typedef square_state_type square_state_type_mpz;
-typedef square_state_type square_state_type_fast;
-
 //returns number of iterations performed
 //if this returns ~0, the discriminant was invalid and the inputs are unchanged
-uint64 repeated_square_fast(square_state_type &square_state,form& f, const integer& D, const integer& L, uint64 base, uint64 iterations, INUDUPLListener *nuduplListener) {
+template<class int1x, class int2x, class int3x, class int4x>
+uint64 repeated_square_fast(square_state_type<int1x, int2x, int3x, int4x> &square_state,form& f, const integer& D, const integer& L, uint64 base, uint64 iterations, INUDUPLListener *nuduplListener) {
 
     if (enable_threads) {
         return repeated_square_fast_multithread(square_state, f, D, L, base, iterations, nuduplListener);
@@ -1174,3 +1188,6 @@ uint64 repeated_square_fast(square_state_type &square_state,form& f, const integ
         return repeated_square_fast_single_thread(square_state, f, D, L, base, iterations, nuduplListener);
     }
 }
+
+typedef square_state_type<int1x_mpz, int2x_mpz, int3x_mpz, int4x_mpz> square_state_type_mpz;
+typedef square_state_type<int1x_fast, int2x_fast, int3x_fast, int4x_fast> square_state_type_fast;

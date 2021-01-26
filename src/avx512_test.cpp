@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
     if (argc==2 && string(argv[1]) == "avx512") {
         integer a_int=rand_integer(512);
 
-        int1x a;
+        int1x_mpz a;
         mpz_set(a._(), a_int.impl);
 
         avx512_int1x a_avx512;
@@ -99,8 +99,8 @@ int main(int argc, char **argv) {
     }
 
 
-    do_benchmark<int1x, avx512_int1x, int2x, avx512_int2x>( "benchmark", 512 );
-    do_benchmark<int2x, avx512_int2x, int4x, avx512_int4x>( "benchmark", 1024 );
+    do_benchmark<int1x_mpz, avx512_int1x, int2x_mpz, avx512_int2x>( "benchmark", 512 );
+    do_benchmark<int2x_mpz, avx512_int2x, int4x_mpz, avx512_int4x>( "benchmark", 1024 );
 
     TRACK_CYCLES_OUTPUT_STATS
 
